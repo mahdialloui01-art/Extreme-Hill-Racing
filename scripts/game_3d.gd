@@ -43,7 +43,7 @@ var menu_start_button: Button
 var menu_upgrade_button: Button
 var menu_restart_button: Button
 var stage_select: OptionButton
-var audio_manager: Node
+var audio_manager: Variant
 var world_environment: WorldEnvironment
 var sun_light: DirectionalLight3D
 var game_started := false
@@ -223,7 +223,7 @@ func _build_hud() -> void:
 	stats.add_theme_constant_override("separation", 5)
 	top_panel.add_child(stats)
 	var title := Label.new()
-	title.text = "EXTREME  /  MOUNTAIN RUN"
+	title.text = "STAGE %02d  /  %s  /  %s" % [current_stage + 1, STAGE_NAMES[current_stage], STAGE_DIFFICULTIES[current_stage]]
 	title.add_theme_font_size_override("font_size", 17)
 	title.add_theme_color_override("font_color", Color("#f4d99a"))
 	stats.add_child(title)
