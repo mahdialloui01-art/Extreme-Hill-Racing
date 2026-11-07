@@ -228,12 +228,30 @@ func _build_scenery() -> void:
 		var side := -1.0 if rng.randf() < 0.5 else 1.0
 		var z := side * rng.randf_range(8.0, 26.0)
 		var pos := Vector3(x, height_at(x), z)
-		if i % 4 == 0:
-			_add_tree(pos, rng.randf_range(0.85, 1.65))
-		elif i % 4 == 1:
-			_add_bush(pos, rng.randf_range(0.65, 1.25))
+		var size_value := rng.randf_range(0.85, 1.65)
+		if x < 1050.0:
+			# Zone 1: dense green foothill forest.
+			if i % 3 == 0:
+				_add_tree(pos, size_value)
+			else:
+				_add_bush(pos, rng.randf_range(0.65, 1.25))
+		elif x < 2100.0:
+			# Zone 2: exposed rocky pass.
+			_add_rock(pos, rng.randf_range(0.7, 1.55))
+			if i % 5 == 0:
+				_add_tree(pos + Vector3(0.0, 0.0, side * 3.0), 0.8)
+		elif x < 3150.0:
+			# Zone 3: highland scrub and scattered boulders.
+			if i % 3 == 0:
+				_add_rock(pos, rng.randf_range(0.65, 1.5))
+			else:
+				_add_bush(pos, rng.randf_range(0.55, 1.05))
 		else:
-			_add_rock(pos, rng.randf_range(0.45, 1.45))
+			# Zone 4: sparse summit forest with larger rocks.
+			if i % 4 == 0:
+				_add_tree(pos, rng.randf_range(0.75, 1.25))
+			else:
+				_add_rock(pos, rng.randf_range(0.9, 1.7))
 
 func _add_tree(pos: Vector3, scale_value: float) -> void:
 	if tree_scene != null:
@@ -339,3 +357,12 @@ func _build_stage_markers() -> void:
 		sign_mat.roughness = 0.9
 		board.material_override = sign_mat
 		add_child(board)
+		var sign_text := Label3D.new()
+		sign_text.text = "%d m" % distance
+		sign_text.position = Vector3(x + 0.35, y + 2.35, z + 0.11)
+		sign_text.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		sign_text.font_size = 52
+		sign_text.pixel_size = 0.012
+		sign_text.outline_size = 8
+		sign_text.modulate = Color("#382719")
+		add_child(sign_text)
