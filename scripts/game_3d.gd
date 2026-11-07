@@ -3,8 +3,8 @@ extends Node3D
 const TerrainScript = preload("res://scripts/terrain_3d.gd")
 const CarScript = preload("res://scripts/car_3d.gd")
 
-var terrain: Node3D
-var car: CharacterBody3D
+var terrain: HillTerrain3D
+var car: HillCar3D
 var camera: Camera3D
 var speed_label: Label
 var distance_label: Label
