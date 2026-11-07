@@ -19,7 +19,9 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 - Gold coin pickups award 10 coins each.
 - Timber trail obstacles add collision challenges.
 - Stage progress bar and a finish condition at 4,200 metres.
-- Completing the stage awards a 500-coin completion bonus.\n- Career wallet, best distance and engine upgrade level are saved locally with ConfigFile.\n- Five engine power upgrade levels can be purchased with collected coins.
+- Completing the stage awards a 500-coin completion bonus.
+- Career wallet, best distance and engine upgrade level are saved locally with ConfigFile.
+- Five engine power upgrade levels can be purchased with collected coins.
 - Restart resets the run and respawns pickups.
 
 ## Run
