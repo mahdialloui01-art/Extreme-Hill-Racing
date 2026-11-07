@@ -28,6 +28,13 @@ var upgrade_button: Button
 var stage_finished := false
 var run_ended := false
 var pickups: Array[Area3D] = []
+var menu_layer: CanvasLayer
+var menu_title: Label
+var menu_subtitle: Label
+var menu_start_button: Button
+var menu_upgrade_button: Button
+var menu_restart_button: Button
+var game_started := false
 
 func _ready() -> void:
 	_load_progress()
@@ -261,6 +268,125 @@ func _build_hud() -> void:
 	upgrade_button.pressed.connect(_buy_engine_upgrade)
 	root.add_child(upgrade_button)
 	_update_upgrade_button()
+	var pause_button := Button.new()
+	pause_button.text = "Ⅱ"
+	pause_button.anchor_left = 1.0
+	pause_button.anchor_right = 1.0
+	pause_button.offset_left = -174
+	pause_button.offset_top = 18
+	pause_button.offset_right = -102
+	pause_button.offset_bottom = 82
+	pause_button.add_theme_font_size_override("font_size", 28)
+	pause_button.pressed.connect(_toggle_pause)
+	root.add_child(pause_button)
+	_build_menu_overlay()
+
+
+func _build_menu_overlay() -> void:
+	menu_layer = CanvasLayer.new()
+	menu_layer.name = "TitleAndPauseOverlay"
+	menu_layer.layer = 20
+	menu_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(menu_layer)
+	var shade := ColorRect.new()
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.color = Color(0.015, 0.025, 0.035, 0.88)
+	menu_layer.add_child(shade)
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -250
+	panel.offset_top = -190
+	panel.offset_right = 250
+	panel.offset_bottom = 190
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color("#14232b")
+	panel_style.border_color = Color("#d5ad68")
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(22)
+	panel_style.content_margin_left = 28
+	panel_style.content_margin_right = 28
+	panel_style.content_margin_top = 26
+	panel_style.content_margin_bottom = 26
+	panel.add_theme_stylebox_override("panel", panel_style)
+	menu_layer.add_child(panel)
+	var layout := VBoxContainer.new()
+	layout.add_theme_constant_override("separation", 16)
+	panel.add_child(layout)
+	menu_title = Label.new()
+	menu_title.text = "EXTREME HILL RACING"
+	menu_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	menu_title.add_theme_font_size_override("font_size", 30)
+	menu_title.add_theme_color_override("font_color", Color("#f2d49a"))
+	layout.add_child(menu_title)
+	menu_subtitle = Label.new()
+	menu_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	menu_subtitle.add_theme_font_size_override("font_size", 16)
+	menu_subtitle.add_theme_color_override("font_color", Color("#d5e0e3"))
+	layout.add_child(menu_subtitle)
+	menu_start_button = _make_menu_button("START DRIVE", Color("#b94b2d"))
+	menu_start_button.pressed.connect(_on_menu_start)
+	layout.add_child(menu_start_button)
+	menu_upgrade_button = _make_menu_button("GARAGE  •  ENGINE UPGRADE", Color("#80653b"))
+	menu_upgrade_button.pressed.connect(_buy_engine_upgrade)
+	layout.add_child(menu_upgrade_button)
+	menu_restart_button = _make_menu_button("RESTART STAGE", Color("#315d78"))
+	menu_restart_button.pressed.connect(_restart)
+	menu_restart_button.visible = false
+	layout.add_child(menu_restart_button)
+	_show_title_menu()
+	get_tree().paused = true
+
+func _make_menu_button(caption: String, tint: Color) -> Button:
+	var button := Button.new()
+	button.text = caption
+	button.custom_minimum_size = Vector2(0, 58)
+	button.add_theme_font_size_override("font_size", 19)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	var style := StyleBoxFlat.new()
+	style.bg_color = tint
+	style.set_corner_radius_all(13)
+	style.set_border_width_all(1)
+	style.border_color = Color(1, 1, 1, 0.35)
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style)
+	button.add_theme_stylebox_override("pressed", style)
+	return button
+
+func _show_title_menu() -> void:
+	menu_layer.visible = true
+	menu_title.text = "EXTREME HILL RACING"
+	menu_subtitle.text = "MOUNTAIN STAGE 01  •  BEST %04d m  •  WALLET %d" % [int(best_distance), wallet_coins]
+	menu_start_button.text = "START DRIVE"
+	menu_restart_button.visible = false
+	_update_menu_upgrade_button()
+
+func _show_pause_menu() -> void:
+	menu_layer.visible = true
+	menu_title.text = "PAUSED"
+	menu_subtitle.text = "TAKE A BREATHER  •  BEST %04d m  •  WALLET %d" % [int(best_distance), wallet_coins]
+	menu_start_button.text = "RESUME DRIVE"
+	menu_restart_button.visible = true
+	_update_menu_upgrade_button()
+
+func _update_menu_upgrade_button() -> void:
+	if not is_instance_valid(menu_upgrade_button):
+		return
+	if engine_level >= 5:
+		menu_upgrade_button.text = "GARAGE  •  ENGINE MAX"
+	else:
+		menu_upgrade_button.text = "GARAGE  •  UPGRADE LV %d  •  100 COINS" % engine_level
+	menu_upgrade_button.disabled = engine_level >= 5 or wallet_coins < 100
+
+func _on_menu_start() -> void:
+	game_started = true
+	menu_layer.visible = false
+	get_tree().paused = false
+
+func _toggle_pause() -> void:
+	if not game_started or get_tree().paused:
+		return
+	get_tree().paused = true
+	_show_pause_menu()
 
 func _on_gas_down() -> void:
 	if not run_ended and fuel > 0.0:
@@ -327,6 +453,7 @@ func _process(delta: float) -> void:
 	stage_bar.value = distance
 	best_distance = maxf(best_distance, distance)
 	_update_upgrade_button()
+	_update_menu_upgrade_button()
 	if not run_ended:
 		status_label.text = "BEST %04d m   •   COLLECT FUEL & COINS" % int(best_distance)
 	if not stage_finished and distance >= STAGE_LENGTH_M:
@@ -393,3 +520,7 @@ func _restart() -> void:
 			pickup.queue_free()
 	pickups.clear()
 	_build_pickups_and_hazards()
+	game_started = true
+	if is_instance_valid(menu_layer):
+		menu_layer.visible = false
+	get_tree().paused = false
