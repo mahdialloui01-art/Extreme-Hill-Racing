@@ -1,0 +1,27 @@
+name: Godot project validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.3
+        run: |
+          curl -L --fail --retry 3 -o godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip godot.zip -d godot-bin
+          chmod +x godot-bin/Godot_v4.3-stable_linux.x86_64
+
+      - name: Import project and check scripts
+        run: godot-bin/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
+
+      - name: Run main scene headlessly
+        run: godot-bin/Godot_v4.3-stable_linux.x86_64 --headless --path . --quit-after 120
