@@ -14,6 +14,8 @@ var wheel_spin := 0.0
 var body_visual: Node3D
 var wheels: Array[Node3D] = []
 var dust_particles: CPUParticles3D
+var suspension_offset := 0.0
+var suspension_velocity := 0.0
 
 func _create_dust_effect() -> void:
 	dust_particles = CPUParticles3D.new()
@@ -141,6 +143,7 @@ func _physics_process(delta: float) -> void:
 	var accelerate := touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)
 	var brake := touch_brake or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A)
 	var grounded := is_on_floor()
+	var incoming_vertical_speed := velocity.y
 	if is_instance_valid(dust_particles):
 		dust_particles.emitting = grounded and (accelerate or (brake and absf(velocity.x) > 4.0)) and absf(velocity.x) > 3.0
 
@@ -179,10 +182,20 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	# Spring response compresses on landing, then settles smoothly.
+	if not grounded and is_on_floor():
+		suspension_velocity = -minf(absf(incoming_vertical_speed) * 0.018, 2.8)
+	var spring_acceleration := -suspension_offset * 58.0 - suspension_velocity * 13.0
+	suspension_velocity += spring_acceleration * delta
+	suspension_offset += suspension_velocity * delta
+	suspension_offset = clampf(suspension_offset, -0.24, 0.10)
+	if is_on_floor() and absf(suspension_offset) < 0.002 and absf(suspension_velocity) < 0.02:
+		suspension_offset = 0.0
+		suspension_velocity = 0.0
+
 	# Small chassis movement adds suspension feedback without changing collision geometry.
 	var suspension_bob := sin(wheel_spin * 0.32) * minf(absf(velocity.x) * 0.0015, 0.035)
-	var impact_bounce := minf(absf(velocity.y) * 0.006, 0.12) if grounded else 0.0
-	body_visual.position.y = lerpf(body_visual.position.y, suspension_bob + impact_bounce, minf(1.0, delta * 9.0))
+	body_visual.position.y = lerpf(body_visual.position.y, suspension_bob + suspension_offset, minf(1.0, delta * 12.0))
 
 	wheel_spin += velocity.x * delta * 2.2
 	for wheel in wheels:
@@ -199,6 +212,8 @@ func reset_car(spawn: Vector3) -> void:
 	body_visual.position = Vector3.ZERO
 	body_visual.rotation = Vector3.ZERO
 	wheel_spin = 0.0
+	suspension_offset = 0.0
+	suspension_velocity = 0.0
 	crashed = false
 	touch_accelerate = false
 	touch_brake = false
