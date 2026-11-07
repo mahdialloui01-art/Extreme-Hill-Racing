@@ -54,7 +54,8 @@ func _build_ground() -> void:
 	ground.name = "MountainGround"
 	ground.mesh = mesh
 	var earth := StandardMaterial3D.new()
-	earth.albedo_color = Color("#66503d")
+	earth.albedo_color = Color.WHITE
+	earth.vertex_color_use_as_albedo = true
 	earth.roughness = 1.0
 	ground.material_override = earth
 	add_child(ground)
@@ -68,7 +69,13 @@ func _build_ground() -> void:
 	add_child(body)
 
 func _add_triangle(st: SurfaceTool, faces: PackedVector3Array, a: Vector3, b: Vector3, c: Vector3) -> void:
-	st.set_color(Color.WHITE)
+	var average_height := (a.y + b.y + c.y) / 3.0
+	var altitude := clampf((average_height + 2.0) / 20.0, 0.0, 1.0)
+	var rock_tint := Color("#817b70")
+	var earth_tint := Color("#536044")
+	var variation := 0.94 + 0.06 * sin((a.x + b.x + c.x) * 0.013)
+	var ground_tint := earth_tint.lerp(rock_tint, altitude) * variation
+	st.set_color(ground_tint)
 	st.add_vertex(a)
 	st.add_vertex(c)
 	st.add_vertex(b)
@@ -119,7 +126,40 @@ func _build_road() -> void:
 	road_mat.uv1_scale = Vector3(0.22, 0.22, 0.22)
 	road.material_override = road_mat
 	add_child(road)
+	_add_road_shoulders()
 	_add_road_edges()
+
+func _add_road_shoulders() -> void:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var outer_width := ROAD_HALF_WIDTH + 0.85
+	var x := WORLD_START
+	while x < WORLD_END:
+		var x2 := minf(x + STEP, WORLD_END)
+		var y1 := height_at(x) + 0.075
+		var y2 := height_at(x2) + 0.075
+		for side in [-1.0, 1.0]:
+			var inner1 := Vector3(x, y1, side * ROAD_HALF_WIDTH)
+			var inner2 := Vector3(x2, y2, side * ROAD_HALF_WIDTH)
+			var outer1 := Vector3(x, y1 - 0.025, side * outer_width)
+			var outer2 := Vector3(x2, y2 - 0.025, side * outer_width)
+			st.set_color(Color.WHITE)
+			st.add_vertex(inner1)
+			st.add_vertex(outer2)
+			st.add_vertex(inner2)
+			st.add_vertex(inner1)
+			st.add_vertex(outer1)
+			st.add_vertex(outer2)
+		x = x2
+	st.generate_normals()
+	var shoulder := MeshInstance3D.new()
+	shoulder.name = "GravelRoadShoulders"
+	shoulder.mesh = st.commit()
+	var shoulder_mat := StandardMaterial3D.new()
+	shoulder_mat.albedo_color = Color("#65513e")
+	shoulder_mat.roughness = 1.0
+	shoulder.material_override = shoulder_mat
+	add_child(shoulder)
 
 func _add_road_edges() -> void:
 	for side in [-1.0, 1.0]:
