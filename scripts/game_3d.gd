@@ -54,10 +54,11 @@ func _build_world() -> void:
 	camera.name = "SideFollowCamera"
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.size = 13.5
-	camera.position = Vector3(0, 4.8, 25.0)
 	camera.current = true
 	add_child(camera)
-	camera.look_at(car.global_position + Vector3(2.0, 1.3, 0), Vector3.UP)
+	# Keep the camera above the mountain surface and elevated enough to show the road.
+	camera.global_position = car.global_position + Vector3(2.0, 9.0, 22.0)
+	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
@@ -152,11 +153,12 @@ func _process(delta: float) -> void:
 	best_distance = maxf(best_distance, distance)
 	status_label.text = "CRASHED!  TAP RESTART" if car.crashed else "BEST   %04d m     •     HOLD GAS TO CLIMB" % int(best_distance)
 	if is_instance_valid(camera):
-		var target: Vector3 = car.global_position + Vector3(2.0, 2.2, 25.0)
+		# Elevated follow angle exposes the road surface instead of viewing it edge-on.
+		var target: Vector3 = car.global_position + Vector3(2.0, 9.0, 22.0)
 		camera.global_position = camera.global_position.lerp(target, minf(1.0, delta * 3.0))
 		camera.look_at(car.global_position + Vector3(2.0, 1.2, 0), Vector3.UP)
 
 func _restart() -> void:
 	car.reset_car(Vector3(start_x, terrain.height_at(start_x) + 1.65, 0))
-	camera.global_position = car.global_position + Vector3(2.0, 4.8, 25.0)
-	camera.look_at(car.global_position + Vector3(2.0, 1.3, 0), Vector3.UP)
+	camera.global_position = car.global_position + Vector3(2.0, 9.0, 22.0)
+	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
