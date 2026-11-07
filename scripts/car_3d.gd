@@ -107,27 +107,56 @@ func set_controls(accelerate: bool, brake: bool) -> void:
 func _physics_process(delta: float) -> void:
 	if crashed:
 		return
+
 	var accelerate := touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)
 	var brake := touch_brake or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A)
+	var grounded := is_on_floor()
+
+	# Let gravity pull the car along the slope instead of making it feel glued to the track.
+	if grounded:
+		var ground_normal := get_floor_normal()
+		velocity.x += GRAVITY * ground_normal.x * ground_normal.y * delta
+	else:
+		velocity.y -= GRAVITY * delta
+
 	if accelerate:
 		velocity.x = move_toward(velocity.x, MAX_SPEED, ENGINE_FORCE * delta)
 	elif brake:
 		velocity.x = move_toward(velocity.x, -8.0, BRAKE_FORCE * delta)
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, 3.0 * delta)
-	if not is_on_floor():
-		velocity.y -= GRAVITY * delta
-	else:
+		var rolling_drag := 2.2 if grounded else 0.45
+		velocity.x = move_toward(velocity.x, 0.0, rolling_drag * delta)
+
+	velocity.x = clampf(velocity.x, -8.0, MAX_SPEED)
+	velocity.z = move_toward(velocity.z, 0.0, 10.0 * delta)
+
+	if grounded:
 		velocity.y = maxf(velocity.y, -1.0)
 		var normal := get_floor_normal()
 		var target_pitch := atan2(-normal.x, normal.y)
-		body_visual.rotation.z = lerp_angle(body_visual.rotation.z, target_pitch, delta * 5.5)
-	velocity.z = move_toward(velocity.z, 0.0, 10.0 * delta)
+		body_visual.rotation.z = lerp_angle(body_visual.rotation.z, target_pitch, minf(1.0, delta * 7.0))
+	else:
+		# Air control gives the player a way to correct the landing angle.
+		if accelerate:
+			body_visual.rotation.z += 0.9 * delta
+		elif brake:
+			body_visual.rotation.z -= 0.9 * delta
+		else:
+			body_visual.rotation.z = move_toward(body_visual.rotation.z, 0.0, 0.18 * delta)
+		body_visual.rotation.z = clampf(body_visual.rotation.z, -0.72, 0.72)
+
 	move_and_slide()
+
+	# Small chassis movement adds suspension feedback without changing collision geometry.
+	var suspension_bob := sin(wheel_spin * 0.32) * minf(absf(velocity.x) * 0.0015, 0.035)
+	var impact_bounce := minf(absf(velocity.y) * 0.006, 0.12) if grounded else 0.0
+	body_visual.position.y = lerpf(body_visual.position.y, suspension_bob + impact_bounce, minf(1.0, delta * 9.0))
+
 	wheel_spin += velocity.x * delta * 2.2
 	for wheel in wheels:
 		if is_instance_valid(wheel):
 			wheel.rotation.z = wheel_spin
+
 	if global_position.y < -22.0 or global_position.x < -100.0:
 		crashed = true
 
