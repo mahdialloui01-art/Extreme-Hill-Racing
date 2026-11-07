@@ -78,7 +78,7 @@ func _make_music_loop() -> AudioStreamWAV:
 		var pad := sin(TAU * root * t) * 0.34
 		pad += sin(TAU * root * 1.5 * t) * 0.16
 		pad += sin(TAU * root * 2.0 * t) * 0.10
-		var melody_note := root * [2.0, 2.5, 3.0, 2.5][int(floor(t * 2.0)) % 4]
+		var melody_note: float = root * [2.0, 2.5, 3.0, 2.5][int(floor(t * 2.0)) % 4]
 		var melody := sin(TAU * melody_note * t) * 0.08
 		samples[i] = (pad + melody) * pulse * 0.22
 	return _make_stream(samples, true)
