@@ -18,7 +18,7 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 - Gold coin pickups award 10 coins each.
 - Timber trail obstacles add collision challenges.
 - Stage progress bar and a finish condition at 4,200 metres.
-- Completing the stage awards a 500-coin completion bonus.
+- Completing the stage awards a 500-coin completion bonus.\n- Career wallet, best distance and engine upgrade level are saved locally with ConfigFile.\n- Five engine power upgrade levels can be purchased with collected coins.
 - Restart resets the run and respawns pickups.
 
 ## Run
@@ -39,6 +39,6 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 
 ## Remaining work before calling this a complete commercial game
 
-The current repository is still a development build, not a 100 MB finished release. It still needs a proper title/menu and stage-select flow, garage and persistent upgrades, save data, multiple independently designed levels, richer sourced PBR art/audio, mobile UI scaling and performance profiling, accessibility/options, Android export configuration and real-device testing. File size will come from legitimate high-quality assets, audio and level content—not padding or duplicated files.
+The current repository is still a development build, not a 100 MB finished release. It still needs a proper title/menu and stage-select flow, multiple independently designed stages, a fuller garage with additional vehicle upgrades and vehicle selection, richer sourced PBR art/audio, mobile UI scaling and performance profiling, accessibility/options, Android export configuration and real-device testing. File size will come from legitimate high-quality assets, audio and level content—not padding or duplicated files.
 
 A GitHub Actions workflow runs Godot headless import and scene checks on pushes. Check the Actions tab for the latest commit's result; a CI pass does not replace Android device testing.
