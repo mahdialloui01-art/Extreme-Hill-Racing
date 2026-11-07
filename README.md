@@ -1,49 +1,44 @@
 # Extreme Hill Racing
 
-A mobile-first mountain racing game prototype built with Godot 4.3+.
+Godot 4.3+ mobile-first 2.5D mountain driving game project.
 
-## Current build: Mountain Stage 01
+## Mountain Stage 01
 
-The project is being rebuilt from a minimal driving prototype into a designed side-view 2.5D mountain stage.
+- Continuous 4,200-world-unit mountain route with terrain collision.
+- Runtime-generated gravel road surface, painted road edges, broken centre markers and gravel shoulders.
+- Layered distant mountain silhouettes and four visual regions: Pine Foothills, The Rock Pass, High Country and Summit Ridge.
+- Imported spruce/rock GLB scenery with procedural fallbacks.
+- Wooden distance boards and named region landmarks.
+- 3D rally SUV, touch gas/brake controls, keyboard controls, follow camera and restart.
 
-### Implemented in this rebuild
-- A continuous 4.2 km mountain route with generated collision terrain.
-- A procedural gravel/dirt road texture generated at runtime (no missing external texture dependency).
-- Visible pale road-edge lines, broken centre guide markings and loose-gravel shoulders.
-- Two distant mountain silhouette layers to add depth behind the playable ridge.
-- Four distinct roadside environment zones: green foothill forest, exposed rocky pass, highland scrub and sparse summit.
-- Roadside trees, bushes and boulders, using imported GLB assets when available and procedural fallbacks otherwise.
-- Wooden distance boards with billboarded metre labels along the stage.
-- Existing 3D rally vehicle, touch controls, speed/distance HUD and restart retained.
+## Gameplay systems added
 
-## Open the project
+- Fuel meter; fuel drains while accelerating.
+- Fuel cans restore fuel and are placed along the route.
+- Gold coin pickups award 10 coins each.
+- Timber trail obstacles add collision challenges.
+- Stage progress bar and a finish condition at 4,200 metres.
+- Completing the stage awards a 500-coin completion bonus.
+- Restart resets the run and respawns pickups.
+
+## Run
+
 1. Install Godot 4.3 or newer.
-2. Download the repository ZIP or clone the repository.
-3. In Godot, choose **Import** and select the folder containing `project.godot`.
-4. Open the project and press **Run Project**.
+2. Download ZIP and extract it.
+3. Import the folder containing `project.godot` in Godot.
+4. Run the project.
 
 ## Controls
-- Hold **GAS** to accelerate.
-- Hold **BRAKE** to slow down or reverse.
-- Desktop: **Right/D** accelerates; **Left/A** brakes.
+
+- Hold **GAS** or press **Right/D** to accelerate.
+- Hold **BRAKE** or press **Left/A** to brake/reverse.
+- Collect red fuel cans and gold coins.
+- Avoid timber obstacles.
+- Reach 4,200 m to finish the stage.
 - Tap **↻** to restart.
 
-## Honest development status
+## Remaining work before calling this a complete commercial game
 
-This is a substantial environment rebuild, not yet a finished commercial-quality game. Stage 01 now has a road surface treatment, road markings, background mountain layers and four scenery zones. The gameplay loop still needs stage objectives, fuel and collectible systems, obstacles, menus, garage/upgrades, audio, save/progression, device performance profiling and Android export testing.
+The current repository is still a development build, not a 100 MB finished release. It still needs a proper title/menu and stage-select flow, garage and persistent upgrades, save data, multiple independently designed levels, richer sourced PBR art/audio, mobile UI scaling and performance profiling, accessibility/options, Android export configuration and real-device testing. File size will come from legitimate high-quality assets, audio and level content—not padding or duplicated files.
 
-The repository includes a GitHub Actions Godot validation workflow. A workflow run is triggered by each push, but a successful run and an Android device test must be confirmed before calling the build verified.
-
-## Project structure
-```
-project.godot
-scenes/
-  main.tscn
-scripts/
-  game_3d.gd
-  car_3d.gd
-  terrain_3d.gd
-  game.gd
-  car.gd
-  terrain.gd
-```
+A GitHub Actions workflow runs Godot headless import and scene checks on pushes. Check the Actions tab for the latest commit's result; a CI pass does not replace Android device testing.
