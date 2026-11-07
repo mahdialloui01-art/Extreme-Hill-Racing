@@ -5,7 +5,7 @@ const CarScript = preload("res://scripts/car_3d.gd")
 const AudioScript = preload("res://scripts/audio_manager.gd")
 const STAGE_NAMES := ["PINE FOOTHILLS", "ROCK PASS", "DESERT DUNES", "FROZEN RIDGE", "VOLCANO RUN"]
 const STAGE_LENGTHS := [4200.0, 4600.0, 5000.0, 5500.0, 6000.0]
-const STAGE_MAP_PATHS := ["res://scripts/maps/pine_foothills.gd", "res://scripts/maps/rock_pass.gd", "res://scripts/maps/desert_dunes.gd", "res://scripts/maps/frozen_ridge.gd", "res://scripts/maps/volcano_run.gd"]
+const STAGE_MAP_PATHS := ["res://scenes/maps/pine_foothills.tscn", "res://scenes/maps/rock_pass.tscn", "res://scenes/maps/desert_dunes.tscn", "res://scenes/maps/frozen_ridge.tscn", "res://scenes/maps/volcano_run.tscn"]
 const STAGE_DIFFICULTIES := ["ROOKIE", "EASY", "MEDIUM", "HARD", "EXTREME"]
 
 var stage_length_m := 2400.0
@@ -88,8 +88,8 @@ func _setup_environment() -> void:
 	_apply_stage_look()
 
 func _build_world() -> void:
-	var map_script: GDScript = load(STAGE_MAP_PATHS[current_stage]) as GDScript
-	terrain = map_script.new()
+	var map_scene: PackedScene = load(STAGE_MAP_PATHS[current_stage]) as PackedScene
+	terrain = map_scene.instantiate()
 	terrain.configure_stage(current_stage)
 	terrain.name = "3D_Mountain_Track"
 	add_child(terrain)
