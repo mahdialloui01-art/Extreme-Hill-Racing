@@ -13,7 +13,7 @@ Place imported assets at these exact paths:
 - `assets/materials/dirt_normal.jpg` — tangent-space normal map (OpenGL orientation).
 - `assets/materials/dirt_roughness.jpg` — roughness map.
 
-Godot imports GLB/glTF scenes directly. Keep the vehicle facing local +X, local +Y up, and roughly 4.5 m long. Put the wheel pivots at wheel centers and name them with `wheel` or `tire` in the node name so the controller can rotate them. If the source model uses another forward axis, correct its orientation in Blender before export.
+Godot imports GLB/glTF scenes directly. Keep the vehicle facing local +X, local +Y up, and roughly 4.5 m long. Put the wheel pivots at wheel centers, align each wheel's local Z axis with its axle, and name it with `wheel` or `tire` so the controller can rotate it. If the source model uses another forward axis, correct its orientation in Blender before export.
 
 Tree models should have their origin at ground level and a sensible real-world height (about 5–12 m). Rock models should have their origin near the bottom/ground contact point. Normalize model scale before export; runtime variation then adds modest scale and rotation changes.
 
