@@ -119,8 +119,8 @@ func _draw() -> void:
 	draw_line(Vector2(25,-73), Vector2(40,-43), Color("#20282a"), 3)
 	draw_line(Vector2(-48,-37), Vector2(49,-37), Color("#ffb15f"), 3)
 	# Fender flares, bumpers, grille and lamps
-	draw_arc(Rect2(-67,-28,48,43), PI, TAU, 20, Color("#242a2b"), 7)
-	draw_arc(Rect2(20,-28,48,43), PI, TAU, 20, Color("#242a2b"), 7)
+	draw_arc(Vector2(-43,-7), 24.0, PI, TAU, 20, Color("#242a2b"), 7.0)
+	draw_arc(Vector2(43,-7), 24.0, PI, TAU, 20, Color("#242a2b"), 7.0)
 	draw_rect(Rect2(52,-22,13,8), Color("#f7e6b0"))
 	draw_rect(Rect2(-66,-22,9,7), Color("#ff4437"))
 	draw_rect(Rect2(60,-11,13,8), Color("#292f30"))
