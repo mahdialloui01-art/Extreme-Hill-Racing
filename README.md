@@ -5,9 +5,10 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 ## Five-stage career
 
 - Five unlockable routes: Pine Foothills, Rock Pass, Desert Dunes, Frozen Ridge and Volcano Run.
-- Stage lengths rise from 2,400 m to 4,200 m, with Rookie, Easy, Medium, Hard and Extreme difficulty labels.
-- Each stage changes the sky, lighting, ground and gravel-road palette, regional sign names and terrain profile.
-- Later stages add steeper, rougher terrain, more frequent timber hazards and faster fuel consumption.
+- Five separately scripted maps now run 4,200 m, 4,600 m, 5,000 m, 5,500 m and 6,000 m, with Rookie, Easy, Medium, Hard and Extreme difficulty labels.
+- Each stage loads its own map script with a distinct terrain-height profile, scenery distribution, landmark structures and biome palette; the five routes are no longer palette-only variants.
+- Biome-specific scenery includes pine forests and timber bridges, canyon arches and rock spires, desert cacti and sandstone monoliths, glacier crystals and ice walls, plus volcanic vents and obsidian formations.
+- Each biome has its own collision hazards: logs and stumps, boulders and stone pillars, cacti and sand barriers, ice spikes and snow blocks, or lava vents and obsidian spikes. Hazard spacing tightens on harder maps.
 - Clear a stage to unlock the next one; unlocked progress, wallet, best distance and engine level are saved locally.
 
 ## Driving world
@@ -52,6 +53,6 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 
 ## Remaining work before calling this a complete commercial game
 
-The current repository is still a development build, not a 100 MB finished release. The five routes currently share a common road-and-scenery construction system with different procedural profiles and palettes; they still need more unique authored geometry, hazards and biome assets. The soundtrack and effects are synthesized in code rather than recorded production audio. A fuller garage with additional vehicles, richer sourced PBR assets, mobile UI scaling and performance profiling, accessibility/options, Android export configuration and real-device testing remain. File size will come from legitimate high-quality assets, audio and level content—not padding or duplicated files.
+The current repository is still a development build, not a 100 MB finished release. The five routes now use separate procedural map scripts and unique biome landmark/hazard sets, while sharing a common terrain-rendering foundation. They still need higher-resolution sourced PBR asset packs, recorded audio, and additional authored set pieces. The soundtrack and effects are synthesized in code rather than recorded production audio. A fuller garage with additional vehicles, richer sourced PBR assets, mobile UI scaling and performance profiling, accessibility/options, Android export configuration and real-device testing remain. File size will come from legitimate high-quality assets, audio and level content—not padding or duplicated files.
 
 A GitHub Actions workflow runs Godot headless import and scene checks on pushes. Check the Actions tab for the latest commit's result; a CI pass does not replace Android device testing.
