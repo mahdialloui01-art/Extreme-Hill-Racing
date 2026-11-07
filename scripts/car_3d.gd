@@ -13,6 +13,35 @@ var crashed := false
 var wheel_spin := 0.0
 var body_visual: Node3D
 var wheels: Array[Node3D] = []
+var dust_particles: CPUParticles3D
+
+func _create_dust_effect() -> void:
+	dust_particles = CPUParticles3D.new()
+	dust_particles.name = "RearWheelDust"
+	dust_particles.amount = 48
+	dust_particles.lifetime = 0.65
+	dust_particles.explosiveness = 0.0
+	dust_particles.emitting = false
+	dust_particles.position = Vector3(-1.25, 0.28, 0.0)
+	dust_particles.direction = Vector3(-1.0, 0.15, 0.0)
+	dust_particles.spread = 32.0
+	dust_particles.gravity = Vector3(0.0, 1.8, 0.0)
+	dust_particles.initial_velocity_min = 0.8
+	dust_particles.initial_velocity_max = 2.4
+	dust_particles.scale_amount_min = 0.08
+	dust_particles.scale_amount_max = 0.22
+	dust_particles.color = Color("#b99a72")
+	var dust_mesh := SphereMesh.new()
+	dust_mesh.radius = 0.16
+	dust_mesh.height = 0.32
+	dust_particles.draw_pass_1 = dust_mesh
+	var particle_material := ParticleProcessMaterial.new()
+	particle_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	particle_material.emission_sphere_radius = 0.35
+	particle_material.damping_min = 1.0
+	particle_material.damping_max = 2.5
+	dust_particles.process_material = particle_material
+	add_child(dust_particles)
 
 func _ready() -> void:
 	motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
@@ -25,6 +54,7 @@ func _ready() -> void:
 	collision.position.y = 0.92
 	add_child(collision)
 	_build_vehicle()
+	_create_dust_effect()
 
 func _build_vehicle() -> void:
 	body_visual = Node3D.new()
@@ -111,6 +141,8 @@ func _physics_process(delta: float) -> void:
 	var accelerate := touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)
 	var brake := touch_brake or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A)
 	var grounded := is_on_floor()
+	if is_instance_valid(dust_particles):
+		dust_particles.emitting = grounded and (accelerate or (brake and absf(velocity.x) > 4.0)) and absf(velocity.x) > 3.0
 
 	# Let gravity pull the car along the slope instead of making it feel glued to the track.
 	if grounded:
