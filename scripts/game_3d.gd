@@ -67,6 +67,7 @@ func _build_world() -> void:
 	add_child(terrain)
 	car = CarScript.new()
 	car.name = "Rally_SUV"
+	car.engine_force = 34.0 + float(engine_level) * 5.0
 	add_child(car)
 	car.global_position = Vector3(start_x, terrain.height_at(start_x) + 1.65, 0)
 	camera = Camera3D.new()
