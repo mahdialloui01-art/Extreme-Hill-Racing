@@ -36,7 +36,7 @@ func _create_dust_effect() -> void:
 	var dust_mesh := SphereMesh.new()
 	dust_mesh.radius = 0.16
 	dust_mesh.height = 0.32
-	dust_particles.draw_pass_1 = dust_mesh
+	dust_particles.mesh = dust_mesh
 	var particle_material := ParticleProcessMaterial.new()
 	particle_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 	particle_material.emission_sphere_radius = 0.35
