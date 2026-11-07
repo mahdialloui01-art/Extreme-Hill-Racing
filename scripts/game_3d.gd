@@ -4,7 +4,8 @@ const TerrainScript = preload("res://scripts/terrain_3d.gd")
 const CarScript = preload("res://scripts/car_3d.gd")
 const AudioScript = preload("res://scripts/audio_manager.gd")
 const STAGE_NAMES := ["PINE FOOTHILLS", "ROCK PASS", "DESERT DUNES", "FROZEN RIDGE", "VOLCANO RUN"]
-const STAGE_LENGTHS := [2400.0, 2800.0, 3200.0, 3700.0, 4200.0]
+const STAGE_LENGTHS := [4200.0, 4600.0, 5000.0, 5500.0, 6000.0]
+const STAGE_MAP_PATHS := ["res://scripts/maps/pine_foothills.gd", "res://scripts/maps/rock_pass.gd", "res://scripts/maps/desert_dunes.gd", "res://scripts/maps/frozen_ridge.gd", "res://scripts/maps/volcano_run.gd"]
 const STAGE_DIFFICULTIES := ["ROOKIE", "EASY", "MEDIUM", "HARD", "EXTREME"]
 
 var stage_length_m := 2400.0
@@ -87,7 +88,8 @@ func _setup_environment() -> void:
 	_apply_stage_look()
 
 func _build_world() -> void:
-	terrain = TerrainScript.new()
+	var map_script: GDScript = load(STAGE_MAP_PATHS[current_stage]) as GDScript
+	terrain = map_script.new()
 	terrain.configure_stage(current_stage)
 	terrain.name = "3D_Mountain_Track"
 	add_child(terrain)
@@ -113,9 +115,12 @@ func _build_pickups_and_hazards() -> void:
 		for offset in [0, 24, 48]:
 			var coin_x := float(x + offset)
 			_spawn_pickup(Vector3(coin_x, terrain.height_at(coin_x) + 1.9, 0.0), "coin")
-	var hazard_interval := 650 - current_stage * 82
+	var hazard_intervals := [640, 570, 500, 440, 380]
+	var hazard_interval: int = hazard_intervals[current_stage]
+	var obstacle_index := 0
 	for x in range(610, int(stage_length_m) - 100, hazard_interval):
-		_spawn_log_obstacle(float(x))
+		_spawn_stage_obstacle(float(x), obstacle_index)
+		obstacle_index += 1
 
 func _spawn_pickup(pos: Vector3, kind: String) -> void:
 	var area := Area3D.new()
@@ -170,29 +175,151 @@ func _on_pickup_body_entered(body: Node3D, pickup: Area3D, kind: String) -> void
 	pickup.queue_free()
 	pickups.erase(pickup)
 
-func _spawn_log_obstacle(x: float) -> void:
-	var obstacle := StaticBody3D.new()
-	obstacle.name = "TrailLogObstacle"
-	obstacle.position = Vector3(x, terrain.height_at(x) + 0.48, 0.0)
-	var mesh := MeshInstance3D.new()
-	var cylinder := CylinderMesh.new()
-	cylinder.top_radius = 0.34
-	cylinder.bottom_radius = 0.34
-	cylinder.height = 2.5
-	cylinder.radial_segments = 12
-	mesh.mesh = cylinder
-	mesh.rotation.z = PI * 0.5
-	var wood := StandardMaterial3D.new()
-	wood.albedo_color = Color("#68452c")
-	wood.roughness = 0.95
-	mesh.material_override = wood
-	obstacle.add_child(mesh)
+func _spawn_stage_obstacle(x: float, obstacle_index: int) -> void:
+	var body := StaticBody3D.new()
+	body.name = "StageHazard_%02d_%03d" % [current_stage + 1, obstacle_index]
+	body.position = Vector3(x, terrain.height_at(x) + 0.78, 0.0)
+	var visual := MeshInstance3D.new()
+	var obstacle_mesh: Mesh
+	var tint := Color("#72543a")
+	var collision_size := Vector3(2.6, 1.55, 1.5)
+	var variant := obstacle_index % 3
+	match current_stage:
+		0:
+			if variant == 0:
+				var log := CylinderMesh.new()
+				log.top_radius = 0.42
+				log.bottom_radius = 0.42
+				log.height = 2.8
+				obstacle_mesh = log
+				visual.rotation.z = PI * 0.5
+				tint = Color("#70472d")
+				collision_size = Vector3(2.8, 0.85, 0.9)
+			elif variant == 1:
+				var stump := CylinderMesh.new()
+				stump.top_radius = 0.48
+				stump.bottom_radius = 0.62
+				stump.height = 1.7
+				obstacle_mesh = stump
+				tint = Color("#805638")
+				collision_size = Vector3(1.25, 1.7, 1.25)
+			else:
+				var timber := BoxMesh.new()
+				timber.size = Vector3(2.8, 1.1, 1.0)
+				obstacle_mesh = timber
+				tint = Color("#9a6a3c")
+		1:
+			if variant == 0:
+				var boulder := SphereMesh.new()
+				boulder.radius = 1.05
+				boulder.height = 1.8
+				obstacle_mesh = boulder
+				visual.scale = Vector3(1.3, 0.9, 1.0)
+				tint = Color("#82796d")
+			elif variant == 1:
+				var pillar := CylinderMesh.new()
+				pillar.top_radius = 0.58
+				pillar.bottom_radius = 0.72
+				pillar.height = 2.6
+				obstacle_mesh = pillar
+				tint = Color("#a18a70")
+				collision_size = Vector3(1.5, 2.6, 1.5)
+			else:
+				var wall := BoxMesh.new()
+				wall.size = Vector3(3.0, 1.5, 1.2)
+				obstacle_mesh = wall
+				tint = Color("#766655")
+		2:
+			if variant == 0:
+				var cactus := CapsuleMesh.new()
+				cactus.radius = 0.42
+				cactus.height = 2.2
+				obstacle_mesh = cactus
+				tint = Color("#477044")
+				collision_size = Vector3(1.1, 2.2, 1.1)
+			elif variant == 1:
+				var dune := BoxMesh.new()
+				dune.size = Vector3(3.0, 1.1, 1.5)
+				obstacle_mesh = dune
+				tint = Color("#c0935b")
+			else:
+				var sandstone := CylinderMesh.new()
+				sandstone.top_radius = 0.5
+				sandstone.bottom_radius = 0.75
+				sandstone.height = 2.0
+				obstacle_mesh = sandstone
+				tint = Color("#b57f4d")
+		3:
+			if variant == 0:
+				var spike := PrismMesh.new()
+				spike.size = Vector3(1.5, 2.5, 1.5)
+				obstacle_mesh = spike
+				tint = Color("#b8e6f3")
+				collision_size = Vector3(1.5, 2.5, 1.5)
+			elif variant == 1:
+				var ice_wall := BoxMesh.new()
+				ice_wall.size = Vector3(3.0, 1.8, 1.6)
+				obstacle_mesh = ice_wall
+				tint = Color("#8bc5dc")
+			else:
+				var snowball := SphereMesh.new()
+				snowball.radius = 0.95
+				snowball.height = 1.8
+				obstacle_mesh = snowball
+				tint = Color("#e1f2f5")
+		4:
+			if variant == 0:
+				var vent := CylinderMesh.new()
+				vent.top_radius = 0.85
+				vent.bottom_radius = 1.05
+				vent.height = 1.35
+				obstacle_mesh = vent
+				tint = Color("#39302e")
+				collision_size = Vector3(2.1, 1.35, 2.1)
+			elif variant == 1:
+				var obsidian := PrismMesh.new()
+				obsidian.size = Vector3(1.5, 2.8, 1.5)
+				obstacle_mesh = obsidian
+				tint = Color("#44383b")
+				collision_size = Vector3(1.5, 2.8, 1.5)
+			else:
+				var basalt := SphereMesh.new()
+				basalt.radius = 1.0
+				basalt.height = 1.8
+				obstacle_mesh = basalt
+				tint = Color("#5b4540")
+	visual.mesh = obstacle_mesh
+	var material := StandardMaterial3D.new()
+	material.albedo_color = tint
+	material.roughness = 0.92
+	if current_stage == 4 and variant == 0:
+		material.emission_enabled = true
+		material.emission = Color("#ff4b1f")
+		material.emission_energy_multiplier = 0.7
+	visual.material_override = material
+	body.add_child(visual)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(2.5, 0.72, 0.85)
+	shape.size = collision_size
 	collision.shape = shape
-	obstacle.add_child(collision)
-	terrain.add_child(obstacle)
+	collision.position.y = collision_size.y * 0.18
+	body.add_child(collision)
+	if current_stage == 4 and variant == 0:
+		var glow := MeshInstance3D.new()
+		var glow_mesh := CylinderMesh.new()
+		glow_mesh.top_radius = 0.48
+		glow_mesh.bottom_radius = 0.48
+		glow_mesh.height = 0.08
+		glow.mesh = glow_mesh
+		glow.position.y = 0.72
+		var glow_material := StandardMaterial3D.new()
+		glow_material.albedo_color = Color("#ff6425")
+		glow_material.emission_enabled = true
+		glow_material.emission = Color("#ff3b16")
+		glow_material.emission_energy_multiplier = 2.0
+		glow.material_override = glow_material
+		body.add_child(glow)
+	terrain.add_child(body)
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
