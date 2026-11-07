@@ -1,14 +1,17 @@
 # Extreme Hill Racing
 
-A mobile-first 2D hill-driving game prototype made with **Godot 4**.
+A mobile-first hill-driving game prototype made with **Godot 4**.
 
 ## Current prototype
 
-- Procedurally generated rolling hills with collision.
+- 2.5D-style layered mountain scenery with a parallax depth illusion.
+- Procedurally generated rolling mountain road with collision.
+- Extra terrain layers, grassy edges and scattered rock details.
+- Improved hand-drawn vehicle with layered bodywork, glass, lights, suspension and detailed wheels.
 - Arcade vehicle controller with acceleration, braking, gravity and air rotation.
 - Touch controls for Android, plus keyboard controls for desktop testing.
 - Follow camera, speed/distance HUD and restart button.
-- Lightweight Compatibility renderer target for a broad range of Android devices.
+- Godot Compatibility renderer with 2D MSAA enabled for mobile-friendly rendering.
 
 ## Open the project
 
@@ -26,7 +29,7 @@ A mobile-first 2D hill-driving game prototype made with **Godot 4**.
 
 ## Important
 
-This is the first playable foundation, not a finished Hill Climb Racing 2-level game yet. Vehicle suspension, wheel-ground physics, menus, garage, upgrades, multiple environments, audio, progression, saving and online features are planned for later milestones.
+The current 2.5D look is built with layered 2D artwork and parallax, not a full 3D renderer. This is an upgraded prototype and still needs testing on a real device. Advanced suspension, wheel-ground physics, menus, garage, upgrades, multiple environments, audio, progression, saving and online features remain future milestones.
 
 ## Project structure
 
