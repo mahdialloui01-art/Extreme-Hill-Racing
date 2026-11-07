@@ -3,7 +3,7 @@ class_name HillTerrain3D
 
 # One deliberately authored mountain stage: long, readable and easy to extend.
 const WORLD_START := -80.0
-const WORLD_END := 4200.0
+const WORLD_END := 4300.0
 const STEP := 4.0
 const HALF_WIDTH := 38.0
 const ROAD_HALF_WIDTH := 4.8
