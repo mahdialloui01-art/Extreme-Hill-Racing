@@ -20,9 +20,9 @@ func _ready() -> void:
 	floor_max_angle = deg_to_rad(65.0)
 	var hitbox := CollisionShape2D.new()
 	var rectangle := RectangleShape2D.new()
-	rectangle.size = Vector2(118.0, 48.0)
+	rectangle.size = Vector2(128.0, 52.0)
 	hitbox.shape = rectangle
-	hitbox.position = Vector2(0.0, 4.0)
+	hitbox.position = Vector2(0.0, 1.0)
 	add_child(hitbox)
 
 func set_controls(accelerate: bool, brake: bool) -> void:
@@ -39,22 +39,18 @@ func _physics_process(delta: float) -> void:
 	elif brake:
 		velocity.x -= BRAKE_FORCE * delta
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, 260.0 * delta)
+		velocity.x = move_toward(velocity.x, 0.0, 180.0 * delta)
 	velocity.x = clampf(velocity.x, -MAX_REVERSE_SPEED, MAX_FORWARD_SPEED)
 	velocity.y += GRAVITY * delta
 	if is_on_floor():
-		var floor_normal := get_floor_normal()
-		var target_angle := atan2(-floor_normal.x, -floor_normal.y)
-		rotation = lerp_angle(rotation, target_angle, minf(1.0, delta * 8.5))
-		if absf(velocity.y) < 80.0:
+		var normal := get_floor_normal()
+		var target_angle := atan2(-normal.x, -normal.y)
+		rotation = lerp_angle(rotation, target_angle, minf(1.0, delta * 9.0))
+		if absf(velocity.y) < 90.0:
 			velocity.y = 0.0
 	else:
-		var air_direction := 0.0
-		if brake:
-			air_direction -= 1.0
-		if accelerate:
-			air_direction += 1.0
-		rotation += air_direction * AIR_ROTATION_SPEED * delta
+		var tilt := (1.0 if accelerate else 0.0) - (1.0 if brake else 0.0)
+		rotation += tilt * AIR_ROTATION_SPEED * delta
 	wheel_spin += velocity.x * delta / 22.0
 	move_and_slide()
 	queue_redraw()
@@ -71,49 +67,67 @@ func reset_car(spawn_position: Vector2) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var shadow_points := PackedVector2Array()
-	for i in range(24):
-		var angle := TAU * float(i) / 24.0
-		shadow_points.append(Vector2(cos(angle) * 70.0, sin(angle) * 11.0 + 17.0))
-	draw_colored_polygon(shadow_points, Color(0.025, 0.06, 0.07, 0.30))
+	# Ground contact shadow
+	draw_set_transform(Vector2(0, 17), 0.0, Vector2(1.0, 1.0))
+	draw_circle(Vector2.ZERO, 49.0, Color(0.04, 0.05, 0.05, 0.22))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
-	# Chassis and suspension.
-	draw_line(Vector2(-43, -9), Vector2(-37, 4), Color(0.13, 0.14, 0.15, 1), 7)
-	draw_line(Vector2(40, -9), Vector2(36, 4), Color(0.13, 0.14, 0.15, 1), 7)
-	draw_line(Vector2(-42, 0), Vector2(42, 0), Color(0.82, 0.72, 0.48, 1), 5)
-
-	for wheel_x in [-41.0, 41.0]:
-		draw_circle(Vector2(wheel_x, 7.0), 24.0, Color(0.045, 0.055, 0.065, 1.0))
-		draw_circle(Vector2(wheel_x, 7.0), 17.0, Color(0.13, 0.15, 0.16, 1.0))
-		draw_circle(Vector2(wheel_x, 7.0), 11.0, Color(0.72, 0.76, 0.75, 1.0))
-		draw_circle(Vector2(wheel_x, 7.0), 5.0, Color(0.28, 0.34, 0.36, 1.0))
+	# Chunky off-road tyres with tread blocks and alloy hubs
+	for wx in [-43.0, 43.0]:
+		var center := Vector2(wx, 8)
+		draw_circle(center, 25, Color("#171a1b"))
+		draw_circle(center, 21, Color("#303638"))
+		for tread in range(12):
+			var a := wheel_spin + float(tread) * TAU / 12.0
+			var p1 := center + Vector2(cos(a), sin(a)) * 21
+			var p2 := center + Vector2(cos(a), sin(a)) * 25
+			draw_line(p1, p2, Color("#111516"), 3.0)
+		draw_circle(center, 14, Color("#aeb7b7"))
+		draw_circle(center, 10, Color("#596568"))
+		draw_circle(center, 4, Color("#d5dddd"))
 		for spoke in range(6):
-			var angle := wheel_spin + float(spoke) * TAU / 6.0
-			var start := Vector2(wheel_x, 7.0) + Vector2(cos(angle), sin(angle)) * 5.0
-			var finish := Vector2(wheel_x, 7.0) + Vector2(cos(angle), sin(angle)) * 15.0
-			draw_line(start, finish, Color(0.82, 0.86, 0.84, 1.0), 2.0)
+			var a := wheel_spin + float(spoke) * TAU / 6.0
+			draw_line(center + Vector2(cos(a), sin(a)) * 5, center + Vector2(cos(a), sin(a)) * 12, Color("#e1e5e3"), 2.0)
 
-	# Main body with layered highlights for a more dimensional finish.
-	var body_points := PackedVector2Array([
-		Vector2(-65, -27), Vector2(-52, -48), Vector2(-24, -54),
-		Vector2(28, -51), Vector2(53, -34), Vector2(65, -9),
-		Vector2(55, -4), Vector2(-58, -4)
-	])
-	draw_colored_polygon(body_points, Color(0.62, 0.15, 0.08, 1.0))
+	# Suspension arms and chassis
+	draw_line(Vector2(-43, -5), Vector2(-31, -21), Color("#242a2c"), 5)
+	draw_line(Vector2(43, -5), Vector2(31, -21), Color("#242a2c"), 5)
+	draw_line(Vector2(-48, -12), Vector2(48, -12), Color("#b8a17b"), 5)
+
+	# Sculpted rally SUV lower body
 	draw_colored_polygon(PackedVector2Array([
-		Vector2(-61, -29), Vector2(-48, -48), Vector2(-22, -51),
-		Vector2(27, -48), Vector2(49, -32), Vector2(57, -22),
-		Vector2(-55, -20)
-	]), Color(0.96, 0.28, 0.11, 1.0))
+		Vector2(-68,-22), Vector2(-61,-39), Vector2(-42,-45), Vector2(39,-44),
+		Vector2(58,-34), Vector2(70,-12), Vector2(62,-4), Vector2(-62,-4)
+	]), Color("#7f241b"))
 	draw_colored_polygon(PackedVector2Array([
-		Vector2(-29, -48), Vector2(-15, -73), Vector2(19, -73),
-		Vector2(41, -48)
-	]), Color(0.99, 0.58, 0.16, 1.0))
+		Vector2(-65,-25), Vector2(-57,-40), Vector2(-39,-43), Vector2(38,-41),
+		Vector2(55,-31), Vector2(64,-15), Vector2(-59,-15)
+	]), Color("#e34b28"))
 	draw_colored_polygon(PackedVector2Array([
-		Vector2(-10, -68), Vector2(14, -68), Vector2(31, -49), Vector2(-22, -49)
-	]), Color(0.36, 0.70, 0.82, 0.98))
-	draw_line(Vector2(-7, -66), Vector2(-15, -50), Color(0.83, 0.94, 0.96, 0.8), 3)
-	draw_line(Vector2(-55, -17), Vector2(52, -17), Color(1.0, 0.69, 0.31, 0.9), 3)
-	draw_rect(Rect2(-55, -10, 110, 6), Color(0.16, 0.15, 0.14, 1.0))
-	draw_circle(Vector2(54, -26), 6.0, Color(1.0, 0.91, 0.58, 1.0))
-	draw_circle(Vector2(-57, -25), 5.0, Color(0.95, 0.18, 0.12, 1.0))
+		Vector2(-30,-43), Vector2(-19,-70), Vector2(23,-70), Vector2(43,-43)
+	]), Color("#bd351f"))
+	# Windshield and side glass
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-23,-65), Vector2(19,-65), Vector2(34,-46), Vector2(-31,-46)
+	]), Color("#9bcbd4"))
+	draw_line(Vector2(-4,-65), Vector2(-4,-46), Color("#34484c"), 3)
+	draw_line(Vector2(20,-64), Vector2(34,-46), Color("#34484c"), 3)
+	draw_line(Vector2(-30,-45), Vector2(43,-45), Color("#f4b26b"), 3)
+	# Roof rack and roll cage
+	draw_line(Vector2(-27,-73), Vector2(25,-73), Color("#20282a"), 4)
+	draw_line(Vector2(-27,-73), Vector2(-35,-43), Color("#20282a"), 3)
+	draw_line(Vector2(25,-73), Vector2(40,-43), Color("#20282a"), 3)
+	draw_line(Vector2(-48,-37), Vector2(49,-37), Color("#ffb15f"), 3)
+	# Fender flares, bumpers, grille and lamps
+	draw_arc(Rect2(-67,-28,48,43), PI, TAU, 20, Color("#242a2b"), 7)
+	draw_arc(Rect2(20,-28,48,43), PI, TAU, 20, Color("#242a2b"), 7)
+	draw_rect(Rect2(52,-22,13,8), Color("#f7e6b0"))
+	draw_rect(Rect2(-66,-22,9,7), Color("#ff4437"))
+	draw_rect(Rect2(60,-11,13,8), Color("#292f30"))
+	draw_line(Vector2(-57,-8), Vector2(59,-8), Color("#252a2a"), 5)
+	draw_line(Vector2(-52,-19), Vector2(48,-19), Color("#ffbd70"), 2)
+	draw_colored_polygon(PackedVector2Array([Vector2(-14,-6),Vector2(14,-6),Vector2(9,1),Vector2(-9,1)]), Color("#202728"))
+	# Door seam, handle and racing number
+	draw_line(Vector2(5,-42), Vector2(5,-17), Color("#8e2d20"), 1.5)
+	draw_rect(Rect2(-8,-35,17,12), Color("#f4eee0"))
+	draw_string(ThemeDB.fallback_font, Vector2(-5,-26), "07", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("#282a29"))
