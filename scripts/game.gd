@@ -3,8 +3,9 @@ extends Node2D
 const TerrainScript = preload("res://scripts/terrain.gd")
 const CarScript = preload("res://scripts/car.gd")
 
-var terrain: Node2D
-var car: CharacterBody2D
+# Keep these untyped so the custom methods on the preloaded scripts remain callable.
+var terrain
+var car
 var camera: Camera2D
 var speed_label: Label
 var distance_label: Label
@@ -29,7 +30,7 @@ func _build_world() -> void:
 	car.z_index = 5
 	add_child(car)
 	start_x = 130.0
-	car.global_position = Vector2(start_x, terrain.get_height_at(start_x) - 100.0)
+	car.global_position = Vector2(start_x, terrain.get_height_at(start_x) - 27.0)
 
 	camera = Camera2D.new()
 	camera.position_smoothing_enabled = true
@@ -67,7 +68,7 @@ func _build_hud() -> void:
 	root.add_child(distance_label)
 
 	message_label = Label.new()
-	message_label.text = "HOLD RIGHT TO ACCELERATE  •  LEFT TO BRAKE / ROTATE"
+	message_label.text = "HOLD GAS TO ACCELERATE  •  BRAKE TO SLOW DOWN"
 	message_label.anchor_left = 0.5
 	message_label.anchor_right = 0.5
 	message_label.offset_left = -310
@@ -79,8 +80,8 @@ func _build_hud() -> void:
 	message_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
 	root.add_child(message_label)
 
-	accelerate_button = _make_control_button(root, "GAS  ▶", Vector2(1, 1), Vector2(-205, -125), Vector2(-35, -35), Color(0.92, 0.31, 0.12, 0.92))
-	brake_button = _make_control_button(root, "◀  BRAKE", Vector2(0, 1), Vector2(35, -125), Vector2(205, -35), Color(0.12, 0.30, 0.48, 0.92))
+	accelerate_button = _make_control_button(root, "GAS  ▶", 1.0, Vector2(-205, -125), Vector2(-35, -35), Color(0.92, 0.31, 0.12, 0.92))
+	brake_button = _make_control_button(root, "◀  BRAKE", 0.0, Vector2(35, -125), Vector2(205, -35), Color(0.12, 0.30, 0.48, 0.92))
 	accelerate_button.button_down.connect(_on_accelerate_down)
 	accelerate_button.button_up.connect(_on_accelerate_up)
 	brake_button.button_down.connect(_on_brake_down)
@@ -94,11 +95,11 @@ func _build_hud() -> void:
 	restart.pressed.connect(_restart)
 	root.add_child(restart)
 
-func _make_control_button(parent: Control, caption: String, anchor: Vector2, from_offset: Vector2, to_offset: Vector2, color: Color) -> Button:
+func _make_control_button(parent: Control, caption: String, horizontal_anchor: float, from_offset: Vector2, to_offset: Vector2, color: Color) -> Button:
 	var button := Button.new()
 	button.text = caption
-	button.anchor_left = anchor.x
-	button.anchor_right = anchor.x
+	button.anchor_left = horizontal_anchor
+	button.anchor_right = horizontal_anchor
 	button.anchor_top = 1.0
 	button.anchor_bottom = 1.0
 	button.offset_left = from_offset.x
@@ -140,7 +141,6 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	var screen := get_viewport_rect().size
 	draw_rect(Rect2(Vector2.ZERO, screen), Color(0.42, 0.72, 0.92, 1.0))
-	# Soft distant mountain silhouettes.
 	var far := PackedVector2Array([
 		Vector2(-100, 440), Vector2(120, 250), Vector2(310, 390),
 		Vector2(520, 205), Vector2(760, 400), Vector2(980, 230),
@@ -162,6 +162,6 @@ func _on_brake_up() -> void:
 	car.set_controls(car.touch_accelerate, false)
 
 func _restart() -> void:
-	var spawn := Vector2(start_x, terrain.get_height_at(start_x) - 100.0)
+	var spawn := Vector2(start_x, terrain.get_height_at(start_x) - 27.0)
 	car.reset_car(spawn)
 	camera.position = Vector2(170.0, -150.0)
