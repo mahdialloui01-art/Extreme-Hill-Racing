@@ -5,8 +5,8 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 ## Five-stage career
 
 - Five unlockable routes: Pine Foothills, Rock Pass, Desert Dunes, Frozen Ridge and Volcano Run.
-- Five separately scripted maps now run 4,200 m, 4,600 m, 5,000 m, 5,500 m and 6,000 m, with Rookie, Easy, Medium, Hard and Extreme difficulty labels.
-- Each stage loads its own map script with a distinct terrain-height profile, scenery distribution, landmark structures and biome palette; the five routes are no longer palette-only variants.
+- Five standalone Godot map scenes (each with its own terrain/scenery script) now run 4,200 m, 4,600 m, 5,000 m, 5,500 m and 6,000 m, with Rookie, Easy, Medium, Hard and Extreme difficulty labels.
+- Each stage loads its own `.tscn` map scene and script with a distinct terrain-height profile, scenery distribution, landmark structures and biome palette; the five routes are no longer palette-only variants.
 - Biome-specific scenery includes pine forests and timber bridges, canyon arches and rock spires, desert cacti and sandstone monoliths, glacier crystals and ice walls, plus volcanic vents and obsidian formations.
 - Each biome has its own collision hazards: logs and stumps, boulders and stone pillars, cacti and sand barriers, ice spikes and snow blocks, or lava vents and obsidian spikes. Hazard spacing tightens on harder maps.
 - Clear a stage to unlock the next one; unlocked progress, wallet, best distance and engine level are saved locally.
