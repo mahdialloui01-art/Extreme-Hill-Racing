@@ -100,10 +100,16 @@ func _build_ground() -> void:
 	var body := StaticBody3D.new()
 	body.name = "MountainCollision"
 	var shape := ConcavePolygonShape3D.new()
+	shape.backface_collision = true
 	shape.set_faces(faces)
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
 	body.add_child(collision)
+	# The drivable road is rendered 0.16 m above the terrain mesh.
+	# Raise its collision surface by the same amount so the wheels and physics floor agree.
+	body.position.y = 0.16
+	body.collision_layer = 1
+	body.collision_mask = 1
 	add_child(body)
 
 func _add_ground_triangle(st: SurfaceTool, faces: PackedVector3Array, a: Vector3, b: Vector3, c: Vector3) -> void:
