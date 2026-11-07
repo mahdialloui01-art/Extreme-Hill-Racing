@@ -438,6 +438,7 @@ func _on_menu_start() -> void:
 func _toggle_pause() -> void:
 	if not game_started or get_tree().paused:
 		return
+	audio_manager.set_engine_active(false)
 	get_tree().paused = true
 	_show_pause_menu()
 
