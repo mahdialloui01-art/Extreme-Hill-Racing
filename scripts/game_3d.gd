@@ -368,6 +368,15 @@ func _show_pause_menu() -> void:
 	menu_restart_button.visible = true
 	_update_menu_upgrade_button()
 
+func _show_end_menu(title_text: String, detail_text: String) -> void:
+	menu_layer.visible = true
+	menu_title.text = title_text
+	menu_subtitle.text = detail_text
+	menu_start_button.text = "RETRY STAGE"
+	menu_restart_button.visible = false
+	_update_menu_upgrade_button()
+	get_tree().paused = true
+
 func _update_menu_upgrade_button() -> void:
 	if not is_instance_valid(menu_upgrade_button):
 		return
@@ -378,6 +387,9 @@ func _update_menu_upgrade_button() -> void:
 	menu_upgrade_button.disabled = engine_level >= 5 or wallet_coins < 100
 
 func _on_menu_start() -> void:
+	if run_ended:
+		_restart()
+		return
 	game_started = true
 	menu_layer.visible = false
 	get_tree().paused = false
@@ -443,6 +455,7 @@ func _process(delta: float) -> void:
 			car.set_controls(false, car.touch_brake)
 			run_ended = true
 			status_label.text = "OUT OF FUEL  •  TAP RESTART"
+			_show_end_menu("OUT OF FUEL", "REFUEL AND TRY THE MOUNTAIN AGAIN")
 	var speed := absf(car.velocity.x) * 3.6
 	var distance := maxf(0.0, car.global_position.x - start_x)
 	speed_label.text = "SPEED   %03d km/h" % int(speed)
@@ -461,6 +474,7 @@ func _process(delta: float) -> void:
 		run_ended = true
 		car.set_controls(false, false)
 		status_label.text = "STAGE COMPLETE!   +500 COINS"
+		_show_end_menu("STAGE COMPLETE!", "YOU EARNED 500 BONUS COINS")
 		coins += 500
 		wallet_coins += 500
 		_save_progress()
@@ -468,6 +482,7 @@ func _process(delta: float) -> void:
 		run_ended = true
 		car.set_controls(false, false)
 		status_label.text = "CRASHED!  TAP RESTART"
+		_show_end_menu("CRASHED!", "RESTART AND TAKE A CLEANER LINE")
 	if is_instance_valid(camera):
 		var target: Vector3 = car.global_position + Vector3(2.0, 9.0, 22.0)
 		camera.global_position = camera.global_position.lerp(target, minf(1.0, delta * 3.0))
