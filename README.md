@@ -8,6 +8,7 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 - Runtime-generated gravel road surface, painted road edges, broken centre markers and gravel shoulders.
 - Layered distant mountain silhouettes and four visual regions: Pine Foothills, The Rock Pass, High Country and Summit Ridge.
 - Imported spruce/rock GLB scenery with procedural fallbacks.
+- Branded title screen, pause/resume overlay and direct garage upgrade shortcut.
 - Wooden distance boards and named region landmarks.
 - 3D rally SUV, touch gas/brake controls, keyboard controls, follow camera and restart.
 
@@ -35,6 +36,7 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 - Collect red fuel cans and gold coins.
 - Avoid timber obstacles.
 - Reach 4,200 m to finish the stage.
+- Tap **Ⅱ** to pause, then resume or restart from the pause screen.
 - Tap **↻** to restart.
 
 ## Remaining work before calling this a complete commercial game
