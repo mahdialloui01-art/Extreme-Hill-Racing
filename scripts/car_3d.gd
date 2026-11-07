@@ -5,7 +5,7 @@ const ENGINE_FORCE := 34.0
 var engine_force := ENGINE_FORCE
 const BRAKE_FORCE := 48.0
 const MAX_SPEED := 37.0
-const GRAVITY := 24.0
+const GRAVITY := 32.0
 const VEHICLE_MODEL_PATH := "res://off-road-4x4 (2).glb"
 
 var touch_accelerate := false
@@ -45,12 +45,13 @@ func _create_dust_effect() -> void:
 func _ready() -> void:
 	motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
 	floor_max_angle = deg_to_rad(58.0)
-	floor_snap_length = 0.45
+	floor_snap_length = 1.0
+	safe_margin = 0.04
 	var collision := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(2.7, 1.0, 1.45)
+	box.size = Vector3(2.7, 1.4, 1.45)
 	collision.shape = box
-	collision.position.y = 0.92
+	collision.position.y = 0.75
 	add_child(collision)
 	_build_vehicle()
 	_create_dust_effect()
@@ -163,7 +164,7 @@ func _physics_process(delta: float) -> void:
 	velocity.z = move_toward(velocity.z, 0.0, 10.0 * delta)
 
 	if grounded:
-		velocity.y = maxf(velocity.y, -1.0)
+		velocity.y = 0.0
 		var normal := get_floor_normal()
 		var target_pitch := atan2(-normal.x, normal.y)
 		body_visual.rotation.z = lerp_angle(body_visual.rotation.z, target_pitch, minf(1.0, delta * 7.0))
