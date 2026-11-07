@@ -10,6 +10,7 @@ const VEHICLE_MODEL_PATH := "res://off-road-4x4 (2).glb"
 var touch_accelerate := false
 var touch_brake := false
 var crashed := false
+var fuel_empty := false
 var wheel_spin := 0.0
 var body_visual: Node3D
 var wheels: Array[Node3D] = []
@@ -135,7 +136,7 @@ func _physics_process(delta: float) -> void:
 	if crashed:
 		return
 
-	var accelerate := touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)
+	var accelerate := not fuel_empty and (touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D))
 	var brake := touch_brake or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A)
 	var grounded := is_on_floor()
 	var incoming_vertical_speed := velocity.y
@@ -210,5 +211,6 @@ func reset_car(spawn: Vector3) -> void:
 	suspension_offset = 0.0
 	suspension_velocity = 0.0
 	crashed = false
+	fuel_empty = false
 	touch_accelerate = false
 	touch_brake = false
