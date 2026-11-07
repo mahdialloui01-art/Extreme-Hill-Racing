@@ -1,44 +1,40 @@
 # Extreme Hill Racing
 
-A mobile-first mountain racing prototype built with **Godot 4**.
+A mobile-first mountain racing game prototype built with Godot 4.3+.
 
-## Current direction: true 3D with a side 2.5D camera
+## Current build: Mountain Stage 01
 
-The active main scene has been converted to `Node3D` and now uses a real 3D world viewed from a side-follow camera.
+The project is being rebuilt from a minimal driving prototype into a designed side-view 2.5D mountain stage.
 
-### Implemented foundation
-- Procedurally generated 3D mountain terrain with a continuous collision mesh.
-- A raised dirt racing surface with visible track-edge details.
-- 3D tree and rock loaders using `spruce-tree.glb` and `low-poly-nature-rock-cluster (1).glb`, with procedural fallbacks.
-- A 3D rally SUV loader that uses the repository's `off-road-4x4 (2).glb` model when it imports successfully, with a procedural vehicle fallback.
-- Basic 3D driving controller with acceleration, braking, gravity, slope alignment and restart.
-- Orthographic side camera with smooth follow.
-- On-screen touch controls, speed/distance HUD and keyboard support.
-- Directional sunlight, shadows, ambient lighting and a procedural sky.
-- Compatibility renderer selected for broad mobile support.
+### Implemented in this rebuild
+- A continuous 4.2 km mountain route with generated collision terrain.
+- A procedural gravel/dirt road texture generated at runtime (no missing external texture dependency).
+- Visible pale road-edge lines, broken centre guide markings and loose-gravel shoulders.
+- Two distant mountain silhouette layers to add depth behind the playable ridge.
+- Four distinct roadside environment zones: green foothill forest, exposed rocky pass, highland scrub and sparse summit.
+- Roadside trees, bushes and boulders, using imported GLB assets when available and procedural fallbacks otherwise.
+- Wooden distance boards with billboarded metre labels along the stage.
+- Existing 3D rally vehicle, touch controls, speed/distance HUD and restart retained.
 
 ## Open the project
-
 1. Install Godot 4.3 or newer.
-2. Download this repository as a ZIP or clone it.
+2. Download the repository ZIP or clone the repository.
 3. In Godot, choose **Import** and select the folder containing `project.godot`.
 4. Open the project and press **Run Project**.
 
 ## Controls
-
 - Hold **GAS** to accelerate.
 - Hold **BRAKE** to slow down or reverse.
 - Desktop: **Right/D** accelerates; **Left/A** brakes.
 - Tap **↻** to restart.
 
-## Status and limitations
+## Honest development status
 
-This is the first true-3D conversion foundation, not a finished commercial-quality game. Imported vehicle, tree and rock assets are now referenced by the runtime scripts. The road still has a safe solid-color material fallback: the optional dirt albedo, normal and roughness images under `assets/materials/` are not currently present in the repository. The project has not yet been opened or run in the Godot editor in this environment, and no Android APK has been built or device-tested.
+This is a substantial environment rebuild, not yet a finished commercial-quality game. Stage 01 now has a road surface treatment, road markings, background mountain layers and four scenery zones. The gameplay loop still needs stage objectives, fuel and collectible systems, obstacles, menus, garage/upgrades, audio, save/progression, device performance profiling and Android export testing.
 
-Next milestones include refined vehicle and terrain models, proper suspension and wheel contact, track materials and decals, dust/impact particles, engine and environment audio, menus, garage and upgrades, multiple biomes, progression and save data, performance profiling, and Android export testing.
+The repository includes a GitHub Actions Godot validation workflow. A workflow run is triggered by each push, but a successful run and an Android device test must be confirmed before calling the build verified.
 
 ## Project structure
-
 ```
 project.godot
 scenes/
@@ -47,7 +43,7 @@ scripts/
   game_3d.gd
   car_3d.gd
   terrain_3d.gd
-  game.gd       # retained 2D prototype
-  car.gd        # retained 2D prototype
-  terrain.gd    # retained 2D prototype
+  game.gd
+  car.gd
+  terrain.gd
 ```
