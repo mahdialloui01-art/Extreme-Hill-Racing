@@ -9,8 +9,8 @@ The active main scene has been converted to `Node3D` and now uses a real 3D worl
 ### Implemented foundation
 - Procedurally generated 3D mountain terrain with a continuous collision mesh.
 - A raised dirt racing surface with visible track-edge details.
-- Procedurally placed 3D trees and rocks along the route.
-- A 3D rally SUV assembled from meshes, with body panels, glass, lights, tires and alloy hubs.
+- 3D tree and rock loaders using `spruce-tree.glb` and `low-poly-nature-rock-cluster (1).glb`, with procedural fallbacks.
+- A 3D rally SUV loader that uses the repository's `off-road-4x4 (2).glb` model when it imports successfully, with a procedural vehicle fallback.
 - Basic 3D driving controller with acceleration, braking, gravity, slope alignment and restart.
 - Orthographic side camera with smooth follow.
 - On-screen touch controls, speed/distance HUD and keyboard support.
@@ -33,7 +33,7 @@ The active main scene has been converted to `Node3D` and now uses a real 3D worl
 
 ## Status and limitations
 
-This is the first true-3D conversion foundation, not a finished commercial-quality game. The car and environment currently use procedural primitive meshes rather than final artist-authored high-detail models and PBR texture sets. The project has not yet been opened or run in the Godot editor in this environment, and no Android APK has been built or device-tested.
+This is the first true-3D conversion foundation, not a finished commercial-quality game. Imported vehicle, tree and rock assets are now referenced by the runtime scripts. The road still has a safe solid-color material fallback: the optional dirt albedo, normal and roughness images under `assets/materials/` are not currently present in the repository. The project has not yet been opened or run in the Godot editor in this environment, and no Android APK has been built or device-tested.
 
 Next milestones include refined vehicle and terrain models, proper suspension and wheel contact, track materials and decals, dust/impact particles, engine and environment audio, menus, garage and upgrades, multiple biomes, progression and save data, performance profiling, and Android export testing.
 
