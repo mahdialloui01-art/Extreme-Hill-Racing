@@ -1,35 +1,41 @@
 # Extreme Hill Racing
 
-A mobile-first hill-driving game prototype made with **Godot 4**.
+A mobile-first mountain racing prototype built with **Godot 4**.
 
-## Current prototype
+## Current direction: true 3D with a side 2.5D camera
 
-- 2.5D-style layered mountain scenery with a parallax depth illusion.
-- Procedurally generated rolling mountain road with collision.
-- Extra terrain layers, grassy edges and scattered rock details.
-- Improved hand-drawn vehicle with layered bodywork, glass, lights, suspension and detailed wheels.
-- Arcade vehicle controller with acceleration, braking, gravity and air rotation.
-- Touch controls for Android, plus keyboard controls for desktop testing.
-- Follow camera, speed/distance HUD and restart button.
-- Godot Compatibility renderer with 2D MSAA enabled for mobile-friendly rendering.
+The active main scene has been converted to `Node3D` and now uses a real 3D world viewed from a side-follow camera.
+
+### Implemented foundation
+- Procedurally generated 3D mountain terrain with a continuous collision mesh.
+- A raised dirt racing surface with visible track-edge details.
+- Procedurally placed 3D trees and rocks along the route.
+- A 3D rally SUV assembled from meshes, with body panels, glass, lights, tires and alloy hubs.
+- Basic 3D driving controller with acceleration, braking, gravity, slope alignment and restart.
+- Orthographic side camera with smooth follow.
+- On-screen touch controls, speed/distance HUD and keyboard support.
+- Directional sunlight, shadows, ambient lighting and a procedural sky.
+- Compatibility renderer selected for broad mobile support.
 
 ## Open the project
 
-1. Install Godot 4.3 or newer (Godot 4.4.1 is recommended).
+1. Install Godot 4.3 or newer.
 2. Download this repository as a ZIP or clone it.
 3. In Godot, choose **Import** and select the folder containing `project.godot`.
 4. Open the project and press **Run Project**.
 
 ## Controls
 
-- Touch **GAS** to accelerate.
-- Touch **BRAKE** to slow down and rotate in the air.
-- On desktop: Right/D accelerates, Left/A brakes.
-- Tap the ↻ button to restart after a crash.
+- Hold **GAS** to accelerate.
+- Hold **BRAKE** to slow down or reverse.
+- Desktop: **Right/D** accelerates; **Left/A** brakes.
+- Tap **↻** to restart.
 
-## Important
+## Status and limitations
 
-The current 2.5D look is built with layered 2D artwork and parallax, not a full 3D renderer. This is an upgraded prototype and still needs testing on a real device. Advanced suspension, wheel-ground physics, menus, garage, upgrades, multiple environments, audio, progression, saving and online features remain future milestones.
+This is the first true-3D conversion foundation, not a finished commercial-quality game. The car and environment currently use procedural primitive meshes rather than final artist-authored high-detail models and PBR texture sets. The project has not yet been opened or run in the Godot editor in this environment, and no Android APK has been built or device-tested.
+
+Next milestones include refined vehicle and terrain models, proper suspension and wheel contact, track materials and decals, dust/impact particles, engine and environment audio, menus, garage and upgrades, multiple biomes, progression and save data, performance profiling, and Android export testing.
 
 ## Project structure
 
@@ -38,7 +44,10 @@ project.godot
 scenes/
   main.tscn
 scripts/
-  game.gd
-  car.gd
-  terrain.gd
+  game_3d.gd
+  car_3d.gd
+  terrain_3d.gd
+  game.gd       # retained 2D prototype
+  car.gd        # retained 2D prototype
+  terrain.gd    # retained 2D prototype
 ```
