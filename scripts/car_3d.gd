@@ -2,6 +2,7 @@ extends CharacterBody3D
 class_name HillCar3D
 
 const ENGINE_FORCE := 34.0
+var engine_force := ENGINE_FORCE
 const BRAKE_FORCE := 48.0
 const MAX_SPEED := 37.0
 const GRAVITY := 24.0
@@ -151,7 +152,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= GRAVITY * delta
 
 	if accelerate:
-		velocity.x = move_toward(velocity.x, MAX_SPEED, ENGINE_FORCE * delta)
+		velocity.x = move_toward(velocity.x, MAX_SPEED, engine_force * delta)
 	elif brake:
 		velocity.x = move_toward(velocity.x, -8.0, BRAKE_FORCE * delta)
 	else:
