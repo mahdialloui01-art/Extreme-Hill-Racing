@@ -7,11 +7,23 @@ const STEP := 5.0
 const HALF_WIDTH := 32.0
 const ROAD_HALF_WIDTH := 4.6
 const BOTTOM_Y := -34.0
+const TREE_MODEL_PATH := "res://assets/vegetation/fir_tree.glb"
+const ROCK_MODEL_PATH := "res://assets/rocks/boulder.glb"
+const ROAD_ALBEDO_PATH := "res://assets/materials/dirt_albedo.jpg"
+const ROAD_NORMAL_PATH := "res://assets/materials/dirt_normal.jpg"
+const ROAD_ROUGHNESS_PATH := "res://assets/materials/dirt_roughness.jpg"
+
+var tree_scene: PackedScene
+var rock_scene: PackedScene
 
 func height_at(x: float) -> float:
 	return 5.0 + sin(x * 0.0010) * 5.0 + sin(x * 0.0028 + 1.2) * 2.1 + sin(x * 0.00032 + 0.6) * 7.0 + maxf(0.0, sin(x * 0.00072)) * 3.0 + sin(x * 0.006) * 0.28
 
 func _ready() -> void:
+	if ResourceLoader.exists(TREE_MODEL_PATH):
+		tree_scene = load(TREE_MODEL_PATH) as PackedScene
+	if ResourceLoader.exists(ROCK_MODEL_PATH):
+		rock_scene = load(ROCK_MODEL_PATH) as PackedScene
 	_build_ground()
 	_build_road()
 	_build_scenery()
@@ -77,11 +89,17 @@ func _build_road() -> void:
 		var c := Vector3(x2, y2, ROAD_HALF_WIDTH)
 		var d := Vector3(x, y1, ROAD_HALF_WIDTH)
 		st.set_color(Color.WHITE)
+		st.set_uv(Vector2(x * 0.18, 0.0))
 		st.add_vertex(a)
+		st.set_uv(Vector2(x2 * 0.18, ROAD_HALF_WIDTH * 0.18))
 		st.add_vertex(c)
+		st.set_uv(Vector2(x2 * 0.18, 0.0))
 		st.add_vertex(b)
+		st.set_uv(Vector2(x * 0.18, 0.0))
 		st.add_vertex(a)
+		st.set_uv(Vector2(x * 0.18, ROAD_HALF_WIDTH * 0.18))
 		st.add_vertex(d)
+		st.set_uv(Vector2(x2 * 0.18, ROAD_HALF_WIDTH * 0.18))
 		st.add_vertex(c)
 		x = x2
 	st.generate_normals()
@@ -91,6 +109,14 @@ func _build_road() -> void:
 	var road_mat := StandardMaterial3D.new()
 	road_mat.albedo_color = Color("#a17b55")
 	road_mat.roughness = 0.94
+	if ResourceLoader.exists(ROAD_ALBEDO_PATH):
+		road_mat.albedo_texture = load(ROAD_ALBEDO_PATH) as Texture2D
+	if ResourceLoader.exists(ROAD_NORMAL_PATH):
+		road_mat.normal_enabled = true
+		road_mat.normal_texture = load(ROAD_NORMAL_PATH) as Texture2D
+	if ResourceLoader.exists(ROAD_ROUGHNESS_PATH):
+		road_mat.roughness_texture = load(ROAD_ROUGHNESS_PATH) as Texture2D
+	road_mat.uv1_scale = Vector3(0.22, 0.22, 0.22)
 	road.material_override = road_mat
 	add_child(road)
 	_add_road_edges()
@@ -126,6 +152,14 @@ func _build_scenery() -> void:
 			_add_rock(base, rng.randf_range(0.45, 1.65), rng)
 
 func _add_tree(pos: Vector3, scale_value: float, rng: RandomNumberGenerator) -> void:
+	if tree_scene != null:
+		var imported_tree := tree_scene.instantiate() as Node3D
+		if imported_tree != null:
+			imported_tree.position = pos
+			imported_tree.scale = Vector3.ONE * scale_value
+			imported_tree.rotation.y = rng.randf_range(0.0, TAU)
+			add_child(imported_tree)
+			return
 	var tree := Node3D.new()
 	tree.position = pos
 	tree.scale = Vector3.ONE * scale_value
@@ -155,6 +189,14 @@ func _add_tree(pos: Vector3, scale_value: float, rng: RandomNumberGenerator) -> 
 		tree.add_child(crown)
 
 func _add_rock(pos: Vector3, size_value: float, rng: RandomNumberGenerator) -> void:
+	if rock_scene != null:
+		var imported_rock := rock_scene.instantiate() as Node3D
+		if imported_rock != null:
+			imported_rock.position = pos
+			imported_rock.scale = Vector3.ONE * size_value
+			imported_rock.rotation = Vector3(rng.randf_range(-0.2, 0.2), rng.randf_range(0.0, TAU), rng.randf_range(-0.2, 0.2))
+			add_child(imported_rock)
+			return
 	var rock := MeshInstance3D.new()
 	var mesh := SphereMesh.new()
 	mesh.radius = size_value
