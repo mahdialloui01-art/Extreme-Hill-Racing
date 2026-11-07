@@ -164,7 +164,9 @@ func reset_car(spawn: Vector3) -> void:
 	global_position = spawn
 	velocity = Vector3.ZERO
 	rotation = Vector3.ZERO
+	body_visual.position = Vector3.ZERO
 	body_visual.rotation = Vector3.ZERO
+	wheel_spin = 0.0
 	crashed = false
 	touch_accelerate = false
 	touch_brake = false
