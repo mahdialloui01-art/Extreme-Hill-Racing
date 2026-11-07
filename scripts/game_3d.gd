@@ -152,7 +152,7 @@ func _process(delta: float) -> void:
 	best_distance = maxf(best_distance, distance)
 	status_label.text = "CRASHED!  TAP RESTART" if car.crashed else "BEST   %04d m     •     HOLD GAS TO CLIMB" % int(best_distance)
 	if is_instance_valid(camera):
-		var target := car.global_position + Vector3(2.0, 2.2, 25.0)
+		var target: Vector3 = car.global_position + Vector3(2.0, 2.2, 25.0)
 		camera.global_position = camera.global_position.lerp(target, minf(1.0, delta * 3.0))
 		camera.look_at(car.global_position + Vector3(2.0, 1.2, 0), Vector3.UP)
 
