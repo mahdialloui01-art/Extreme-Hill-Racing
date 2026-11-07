@@ -5,7 +5,7 @@ const ENGINE_FORCE := 34.0
 const BRAKE_FORCE := 48.0
 const MAX_SPEED := 37.0
 const GRAVITY := 24.0
-const VEHICLE_MODEL_PATH := "res://assets/vehicles/rally_suv.glb"
+const VEHICLE_MODEL_PATH := "res://off-road-4x4 (2).glb"
 
 var touch_accelerate := false
 var touch_brake := false
