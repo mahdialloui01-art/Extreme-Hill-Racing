@@ -119,13 +119,26 @@ func _add_ground_triangle(st: SurfaceTool, faces: PackedVector3Array, a: Vector3
 	faces.append(b)
 
 func _make_road_texture() -> Texture2D:
-	# Small seamless procedural gravel tile; no external texture download required.
+	# Seamless gravel changes tint with the selected region.
+	var road_palettes := [
+		Color(0.53, 0.38, 0.25),
+		Color(0.58, 0.45, 0.32),
+		Color(0.72, 0.53, 0.30),
+		Color(0.58, 0.66, 0.72),
+		Color(0.38, 0.25, 0.22)
+	]
+	var road_base: Color = road_palettes[stage_index]
 	var image := Image.create(256, 256, false, Image.FORMAT_RGBA8)
 	for y in range(256):
 		for x in range(256):
 			var n := rng.randf_range(-0.12, 0.12)
 			var grain := 0.035 if ((x * 17 + y * 31) % 19) < 3 else 0.0
-			var base := Color(0.53 + n + grain, 0.38 + n * 0.78 + grain, 0.25 + n * 0.55 + grain, 1.0)
+			var base := Color(
+				clampf(road_base.r + n + grain, 0.0, 1.0),
+				clampf(road_base.g + n * 0.78 + grain, 0.0, 1.0),
+				clampf(road_base.b + n * 0.55 + grain, 0.0, 1.0),
+				1.0
+			)
 			image.set_pixel(x, y, base)
 	return ImageTexture.create_from_image(image)
 
