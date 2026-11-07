@@ -26,8 +26,8 @@ Godot 4.3+ mobile-first 2.5D mountain driving game project.
 - Fuel cans restore fuel and are placed along the route.
 - Gold coin pickups award 10 coins each.
 - Timber trail obstacles add collision challenges.
-- Stage progress bar and a finish condition at 4,200 metres.
-- Completing the stage awards a 500-coin completion bonus.
+- Stage progress bar and finish lines matched to each route length (2,400–4,200 metres).
+- Stage completion rewards increase from 500 coins on the first route by 150 coins per later route.
 - Career wallet, best distance and engine upgrade level are saved locally with ConfigFile.
 - Five engine power upgrade levels can be purchased with collected coins.
 - Procedurally synthesized looping mountain soundtrack, variable-pitch engine loop, and pickup, fuel, crash, finish and upgrade sound effects.
