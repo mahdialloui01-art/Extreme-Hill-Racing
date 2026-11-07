@@ -318,9 +318,9 @@ func _build_menu_overlay() -> void:
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.offset_left = -250
-	panel.offset_top = -190
+	panel.offset_top = -230
 	panel.offset_right = 250
-	panel.offset_bottom = 190
+	panel.offset_bottom = 230
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color("#14232b")
 	panel_style.border_color = Color("#d5ad68")
