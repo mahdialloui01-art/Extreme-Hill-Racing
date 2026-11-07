@@ -102,9 +102,14 @@ func _build_hud() -> void:
 	brake.button_up.connect(func(): car.set_controls(car.touch_accelerate, false))
 	var restart := Button.new()
 	restart.text = "↻"
-	restart.position = Vector2(1170, 18)
-	restart.size = Vector2(76, 62)
+	restart.anchor_left = 1.0
+	restart.anchor_right = 1.0
+	restart.offset_left = -98
+	restart.offset_top = 18
+	restart.offset_right = -22
+	restart.offset_bottom = 80
 	restart.add_theme_font_size_override("font_size", 30)
+	restart.tooltip_text = "Restart run"
 	restart.pressed.connect(_restart)
 	root.add_child(restart)
 
