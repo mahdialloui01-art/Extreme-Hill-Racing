@@ -135,8 +135,8 @@ func _on_pickup_body_entered(body: Node3D, pickup: Area3D, kind: String) -> void
 		fuel = minf(FUEL_MAX, fuel + 34.0)
 	else:
 		coins += COIN_REWARD
-	wallet_coins += COIN_REWARD
-	_save_progress()
+		wallet_coins += COIN_REWARD
+		_save_progress()
 	pickup.queue_free()
 	pickups.erase(pickup)
 
@@ -335,8 +335,8 @@ func _process(delta: float) -> void:
 		car.set_controls(false, false)
 		status_label.text = "STAGE COMPLETE!   +500 COINS"
 		coins += 500
-	wallet_coins += 500
-	_save_progress()
+		wallet_coins += 500
+		_save_progress()
 	if car.crashed and not run_ended:
 		run_ended = true
 		car.set_controls(false, false)
@@ -379,6 +379,7 @@ func _update_upgrade_button() -> void:
 	upgrade_button.disabled = engine_level >= 5 or wallet_coins < 100
 
 func _restart() -> void:
+	_save_progress()
 	car.reset_car(Vector3(start_x, terrain.height_at(start_x) + 1.65, 0))
 	camera.global_position = car.global_position + Vector3(2.0, 9.0, 22.0)
 	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
