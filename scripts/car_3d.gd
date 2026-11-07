@@ -12,7 +12,7 @@ var touch_brake := false
 var crashed := false
 var wheel_spin := 0.0
 var body_visual: Node3D
-var wheels: Array[MeshInstance3D] = []
+var wheels: Array[Node3D] = []
 
 func _ready() -> void:
 	motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
@@ -83,7 +83,7 @@ func _collect_imported_wheels(root: Node) -> void:
 		if child is Node3D:
 			var node_name := child.name.to_lower()
 			if node_name.contains("wheel") or node_name.contains("tire"):
-				wheels.append(child as MeshInstance3D if child is MeshInstance3D else null)
+				wheels.append(child)
 			_collect_imported_wheels(child)
 
 func _box(parent: Node3D, pos: Vector3, dimensions: Vector3, tint: Color, tilt: Vector3) -> void:
