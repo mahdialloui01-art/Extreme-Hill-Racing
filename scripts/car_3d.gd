@@ -43,6 +43,8 @@ func _create_dust_effect() -> void:
 	add_child(dust_particles)
 
 func _ready() -> void:
+	collision_layer = 1
+	collision_mask = 1
 	motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
 	floor_max_angle = deg_to_rad(58.0)
 	floor_snap_length = 1.0
