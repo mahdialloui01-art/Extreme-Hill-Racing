@@ -226,9 +226,9 @@ func _build_hud() -> void:
 
 	var gas := _make_button(root, "GAS  ▶", 0.0, Vector2(28, -132), Vector2(220, -24), Color("#c94b2d"))
 	var brake := _make_button(root, "◀  BRAKE", 1.0, Vector2(-220, -132), Vector2(-28, -24), Color("#245b86"))
-	gas.button_down.connect(func(): if not run_ended: car.set_controls(true, car.touch_brake))
+	gas.button_down.connect(_on_gas_down)
 	gas.button_up.connect(func(): car.set_controls(false, car.touch_brake))
-	brake.button_down.connect(func(): if not run_ended: car.set_controls(car.touch_accelerate, true))
+	brake.button_down.connect(_on_brake_down)
 	brake.button_up.connect(func(): car.set_controls(car.touch_accelerate, false))
 	var restart := Button.new()
 	restart.text = "↻"
@@ -242,6 +242,14 @@ func _build_hud() -> void:
 	restart.tooltip_text = "Restart stage"
 	restart.pressed.connect(_restart)
 	root.add_child(restart)
+
+func _on_gas_down() -> void:
+	if not run_ended and fuel > 0.0:
+		car.set_controls(true, car.touch_brake)
+
+func _on_brake_down() -> void:
+	if not run_ended:
+		car.set_controls(car.touch_accelerate, true)
 
 func _make_stat_label(parent: Node, value: String, size: int) -> Label:
 	var label := Label.new()
@@ -283,14 +291,15 @@ func _make_button(parent: Control, caption: String, horizontal_anchor: float, fr
 func _process(delta: float) -> void:
 	if not is_instance_valid(car):
 		return
-	if not run_ended and car.touch_accelerate:
+	if not run_ended and (car.touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)):
 		fuel = maxf(0.0, fuel - FUEL_DRAIN_PER_SECOND * delta)
 		if fuel <= 0.0:
+			car.fuel_empty = true
 			car.set_controls(false, car.touch_brake)
 			run_ended = true
 			status_label.text = "OUT OF FUEL  •  TAP RESTART"
 	var speed := absf(car.velocity.x) * 3.6
-	var distance := maxf(0.0, (car.global_position.x - start_x) / 10.0)
+	var distance := maxf(0.0, car.global_position.x - start_x)
 	speed_label.text = "SPEED   %03d km/h" % int(speed)
 	distance_label.text = "DISTANCE   %04d / %04d m" % [int(distance), int(STAGE_LENGTH_M)]
 	coins_label.text = "COINS   %03d" % coins
@@ -320,6 +329,7 @@ func _restart() -> void:
 	camera.global_position = car.global_position + Vector3(2.0, 9.0, 22.0)
 	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
 	fuel = FUEL_MAX
+	car.fuel_empty = false
 	stage_finished = false
 	run_ended = false
 	for pickup in pickups:
