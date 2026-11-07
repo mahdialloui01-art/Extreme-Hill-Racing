@@ -3,7 +3,7 @@ class_name HillTerrain3D
 
 # One deliberately authored mountain stage: long, readable and easy to extend.
 const WORLD_START := -80.0
-const WORLD_END := 4300.0
+const WORLD_END := 6100.0
 const STEP := 4.0
 const HALF_WIDTH := 38.0
 const ROAD_HALF_WIDTH := 4.8
@@ -64,6 +64,7 @@ func _ready() -> void:
 	_build_distant_ridges()
 	_build_scenery()
 	_build_stage_markers()
+	_build_unique_landmarks()
 
 func _build_ground() -> void:
 	var st := SurfaceTool.new()
@@ -438,3 +439,6 @@ func _build_stage_markers() -> void:
 		sign_text.outline_size = 8
 		sign_text.modulate = Color("#382719")
 		add_child(sign_text)
+
+func _build_unique_landmarks() -> void:
+	pass
