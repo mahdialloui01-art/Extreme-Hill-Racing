@@ -346,6 +346,12 @@ func _build_menu_overlay() -> void:
 	menu_subtitle.add_theme_font_size_override("font_size", 16)
 	menu_subtitle.add_theme_color_override("font_color", Color("#d5e0e3"))
 	layout.add_child(menu_subtitle)
+	stage_select = OptionButton.new()
+	stage_select.custom_minimum_size = Vector2(0, 44)
+	stage_select.add_theme_font_size_override("font_size", 17)
+	stage_select.item_selected.connect(_on_stage_selected)
+	layout.add_child(stage_select)
+	_refresh_stage_select()
 	menu_start_button = _make_menu_button("START DRIVE", Color("#b94b2d"))
 	menu_start_button.pressed.connect(_on_menu_start)
 	layout.add_child(menu_start_button)
@@ -378,15 +384,18 @@ func _make_menu_button(caption: String, tint: Color) -> Button:
 func _show_title_menu() -> void:
 	menu_layer.visible = true
 	menu_title.text = "EXTREME HILL RACING"
-	menu_subtitle.text = "MOUNTAIN STAGE 01  •  BEST %04d m  •  WALLET %d" % [int(best_distance), wallet_coins]
-	menu_start_button.text = "START DRIVE"
+	menu_subtitle.text = "CHOOSE YOUR ROUTE  •  UNLOCKED %d / 5  •  WALLET %d" % [unlocked_stage + 1, wallet_coins]
+	stage_select.visible = true
+	_refresh_stage_select()
+	menu_start_button.text = "START STAGE %02d" % (selected_stage + 1)
 	menu_restart_button.visible = false
 	_update_menu_upgrade_button()
 
 func _show_pause_menu() -> void:
 	menu_layer.visible = true
 	menu_title.text = "PAUSED"
-	menu_subtitle.text = "TAKE A BREATHER  •  BEST %04d m  •  WALLET %d" % [int(best_distance), wallet_coins]
+	menu_subtitle.text = "STAGE %02d  •  %s" % [current_stage + 1, STAGE_NAMES[current_stage]]
+	stage_select.visible = false
 	menu_start_button.text = "RESUME DRIVE"
 	menu_restart_button.visible = true
 	_update_menu_upgrade_button()
@@ -395,7 +404,9 @@ func _show_end_menu(title_text: String, detail_text: String) -> void:
 	menu_layer.visible = true
 	menu_title.text = title_text
 	menu_subtitle.text = detail_text
-	menu_start_button.text = "RETRY STAGE"
+	stage_select.visible = stage_finished
+	_refresh_stage_select()
+	menu_start_button.text = "NEXT STAGE" if stage_finished and current_stage < 4 else "RETRY STAGE"
 	menu_restart_button.visible = false
 	_update_menu_upgrade_button()
 	get_tree().paused = true
@@ -411,7 +422,14 @@ func _update_menu_upgrade_button() -> void:
 
 func _on_menu_start() -> void:
 	if run_ended:
-		_restart()
+		if stage_finished and current_stage < unlocked_stage:
+			selected_stage = min(current_stage + 1, unlocked_stage)
+			_load_stage(selected_stage)
+		else:
+			_restart()
+		return
+	if not game_started or selected_stage != current_stage:
+		_load_stage(selected_stage)
 		return
 	game_started = true
 	menu_layer.visible = false
@@ -472,38 +490,46 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(car):
 		return
 	if not run_ended and (car.touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)):
-		fuel = maxf(0.0, fuel - FUEL_DRAIN_PER_SECOND * delta)
+		fuel = maxf(0.0, fuel - fuel_drain_per_second * delta)
 		if fuel <= 0.0:
 			car.fuel_empty = true
 			car.set_controls(false, car.touch_brake)
 			run_ended = true
+			audio_manager.set_engine_active(false)
 			status_label.text = "OUT OF FUEL  •  TAP RESTART"
 			_show_end_menu("OUT OF FUEL", "REFUEL AND TRY THE MOUNTAIN AGAIN")
 	var speed := absf(car.velocity.x) * 3.6
 	var distance := maxf(0.0, car.global_position.x - start_x)
 	speed_label.text = "SPEED   %03d km/h" % int(speed)
-	distance_label.text = "DISTANCE   %04d / %04d m" % [int(distance), int(STAGE_LENGTH_M)]
+	distance_label.text = "STAGE %02d  •  %04d / %04d m" % [current_stage + 1, int(distance), int(stage_length_m)]
 	coins_label.text = "COINS   %03d  •  WALLET %d" % [coins, wallet_coins]
 	fuel_label.text = "FUEL   %d%%" % int(fuel)
 	fuel_bar.value = fuel
 	stage_bar.value = distance
+	audio_manager.set_engine_active(not run_ended and (car.touch_accelerate or Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D)), speed / 133.2)
 	best_distance = maxf(best_distance, distance)
 	_update_upgrade_button()
 	_update_menu_upgrade_button()
 	if not run_ended:
 		status_label.text = "BEST %04d m   •   COLLECT FUEL & COINS" % int(best_distance)
-	if not stage_finished and distance >= STAGE_LENGTH_M:
+	if not stage_finished and distance >= stage_length_m:
 		stage_finished = true
 		run_ended = true
 		car.set_controls(false, false)
-		status_label.text = "STAGE COMPLETE!   +500 COINS"
-		_show_end_menu("STAGE COMPLETE!", "YOU EARNED 500 BONUS COINS")
-		coins += 500
-		wallet_coins += 500
+		var stage_bonus := 500 + current_stage * 150
+		coins += stage_bonus
+		wallet_coins += stage_bonus
+		unlocked_stage = mini(4, maxi(unlocked_stage, current_stage + 1))
+		audio_manager.set_engine_active(false)
+		audio_manager.play_sfx("finish")
+		status_label.text = "STAGE COMPLETE!   +%d COINS" % stage_bonus
+		_show_end_menu("STAGE COMPLETE!", "STAGE %02d CLEARED  •  +%d COINS" % [current_stage + 1, stage_bonus])
 		_save_progress()
 	if car.crashed and not run_ended:
 		run_ended = true
 		car.set_controls(false, false)
+		audio_manager.set_engine_active(false)
+		audio_manager.play_sfx("crash")
 		status_label.text = "CRASHED!  TAP RESTART"
 		_show_end_menu("CRASHED!", "RESTART AND TAKE A CLEANER LINE")
 	if is_instance_valid(camera):
@@ -511,16 +537,90 @@ func _process(delta: float) -> void:
 		camera.global_position = camera.global_position.lerp(target, minf(1.0, delta * 3.0))
 		camera.look_at(car.global_position + Vector3(2.0, 1.2, 0), Vector3.UP)
 
+
+func _apply_stage_look() -> void:
+	if not is_instance_valid(world_environment) or not is_instance_valid(sun_light):
+		return
+	var env := world_environment.environment
+	match current_stage:
+		0:
+			env.background_color = Color("#39739a")
+			env.ambient_light_color = Color("#b6c8d5")
+			sun_light.light_color = Color("#fff0d7")
+		1:
+			env.background_color = Color("#9b7755")
+			env.ambient_light_color = Color("#d5b998")
+			sun_light.light_color = Color("#ffe0b0")
+		2:
+			env.background_color = Color("#d19a55")
+			env.ambient_light_color = Color("#f0c98e")
+			sun_light.light_color = Color("#fff0c5")
+		3:
+			env.background_color = Color("#7895ad")
+			env.ambient_light_color = Color("#d1e2ed")
+			sun_light.light_color = Color("#e6f4ff")
+		4:
+			env.background_color = Color("#4d3535")
+			env.ambient_light_color = Color("#c58b70")
+			sun_light.light_color = Color("#ff9a62")
+
+func _refresh_stage_select() -> void:
+	if not is_instance_valid(stage_select):
+		return
+	stage_select.clear()
+	for i in range(STAGE_NAMES.size()):
+		var state := "UNLOCKED" if i <= unlocked_stage else "LOCKED"
+		stage_select.add_item("%02d  %s  •  %s" % [i + 1, STAGE_NAMES[i], state])
+		stage_select.set_item_disabled(i, i > unlocked_stage)
+	stage_select.select(clampi(selected_stage, 0, unlocked_stage))
+
+func _on_stage_selected(index: int) -> void:
+	if index > unlocked_stage:
+		return
+	selected_stage = index
+	menu_start_button.text = "START STAGE %02d" % (selected_stage + 1)
+
+func _load_stage(index: int) -> void:
+	current_stage = clampi(index, 0, unlocked_stage)
+	selected_stage = current_stage
+	stage_length_m = STAGE_LENGTHS[current_stage]
+	fuel_drain_per_second = 1.45 + float(current_stage) * 0.28
+	for pickup in pickups:
+		if is_instance_valid(pickup):
+			pickup.queue_free()
+	pickups.clear()
+	if is_instance_valid(terrain):
+		terrain.queue_free()
+	if is_instance_valid(car):
+		car.queue_free()
+	if is_instance_valid(camera):
+		camera.queue_free()
+	_apply_stage_look()
+	_build_world()
+	_build_pickups_and_hazards()
+	fuel = FUEL_MAX
+	coins = 0
+	stage_finished = false
+	run_ended = false
+	stage_bar.max_value = stage_length_m
+	stage_bar.value = 0.0
+	game_started = true
+	_save_progress()
+	menu_layer.visible = false
+	get_tree().paused = false
+
 func _load_progress() -> void:
 	var config := ConfigFile.new()
 	if config.load("user://extreme_hill_progress.cfg") == OK:
 		wallet_coins = int(config.get_value("career", "coins", 0))
+		unlocked_stage = clampi(int(config.get_value("career", "unlocked_stage", 0)), 0, 4)
 		engine_level = int(config.get_value("garage", "engine_level", 0))
 		best_distance = float(config.get_value("career", "best_distance", 0.0))
 
 func _save_progress() -> void:
 	var config := ConfigFile.new()
 	config.set_value("career", "coins", wallet_coins)
+	config.set_value("career", "unlocked_stage", unlocked_stage)
 	config.set_value("career", "best_distance", best_distance)
 	config.set_value("garage", "engine_level", engine_level)
 	config.save("user://extreme_hill_progress.cfg")
@@ -531,6 +631,7 @@ func _buy_engine_upgrade() -> void:
 	wallet_coins -= 100
 	engine_level += 1
 	car.engine_force = 34.0 + float(engine_level) * 5.0
+	audio_manager.play_sfx("upgrade")
 	_save_progress()
 	_update_upgrade_button()
 	_update_menu_upgrade_button()
@@ -559,6 +660,8 @@ func _restart() -> void:
 			pickup.queue_free()
 	pickups.clear()
 	_build_pickups_and_hazards()
+	stage_bar.value = 0.0
+	stage_bar.max_value = stage_length_m
 	game_started = true
 	if is_instance_valid(menu_layer):
 		menu_layer.visible = false
