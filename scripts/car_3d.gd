@@ -102,7 +102,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = maxf(velocity.y, -1.0)
 		var normal := get_floor_normal()
-		var target_pitch := atan2(normal.x, normal.y)
+		var target_pitch := atan2(-normal.x, normal.y)
 		body_visual.rotation.z = lerp_angle(body_visual.rotation.z, target_pitch, delta * 5.5)
 	velocity.z = move_toward(velocity.z, 0.0, 10.0 * delta)
 	move_and_slide()
