@@ -8,8 +8,6 @@ const HALF_WIDTH := 32.0
 const ROAD_HALF_WIDTH := 4.6
 const BOTTOM_Y := -34.0
 
-var _heights: PackedFloat32Array = PackedFloat32Array()
-
 func height_at(x: float) -> float:
 	return 5.0 + sin(x * 0.0010) * 5.0 + sin(x * 0.0028 + 1.2) * 2.1 + sin(x * 0.00032 + 0.6) * 7.0 + maxf(0.0, sin(x * 0.00072)) * 3.0 + sin(x * 0.006) * 0.28
 
@@ -31,8 +29,8 @@ func _build_ground() -> void:
 		var b := Vector3(x2, h2, -HALF_WIDTH)
 		var c := Vector3(x2, h2, HALF_WIDTH)
 		var d := Vector3(x, h1, HALF_WIDTH)
-		_add_triangle(st, faces, a, b, c)
-		_add_triangle(st, faces, a, c, d)
+		_add_triangle(st, faces, a, c, b)
+		_add_triangle(st, faces, a, d, c)
 		_add_triangle(st, faces, d, c, Vector3(x2, BOTTOM_Y, HALF_WIDTH))
 		_add_triangle(st, faces, d, Vector3(x2, BOTTOM_Y, HALF_WIDTH), Vector3(x, BOTTOM_Y, HALF_WIDTH))
 		_add_triangle(st, faces, b, a, Vector3(x, BOTTOM_Y, -HALF_WIDTH))
@@ -60,11 +58,11 @@ func _build_ground() -> void:
 func _add_triangle(st: SurfaceTool, faces: PackedVector3Array, a: Vector3, b: Vector3, c: Vector3) -> void:
 	st.set_color(Color.WHITE)
 	st.add_vertex(a)
-	st.add_vertex(b)
 	st.add_vertex(c)
+	st.add_vertex(b)
 	faces.append(a)
-	faces.append(b)
 	faces.append(c)
+	faces.append(b)
 
 func _build_road() -> void:
 	var st := SurfaceTool.new()
@@ -79,8 +77,12 @@ func _build_road() -> void:
 		var c := Vector3(x2, y2, ROAD_HALF_WIDTH)
 		var d := Vector3(x, y1, ROAD_HALF_WIDTH)
 		st.set_color(Color.WHITE)
-		st.add_vertex(a); st.add_vertex(b); st.add_vertex(c)
-		st.add_vertex(a); st.add_vertex(c); st.add_vertex(d)
+		st.add_vertex(a)
+		st.add_vertex(c)
+		st.add_vertex(b)
+		st.add_vertex(a)
+		st.add_vertex(d)
+		st.add_vertex(c)
 		x = x2
 	st.generate_normals()
 	var road := MeshInstance3D.new()
