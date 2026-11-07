@@ -5,6 +5,7 @@ const ENGINE_FORCE := 34.0
 const BRAKE_FORCE := 48.0
 const MAX_SPEED := 37.0
 const GRAVITY := 24.0
+const VEHICLE_MODEL_PATH := "res://assets/vehicles/rally_suv.glb"
 
 var touch_accelerate := false
 var touch_brake := false
@@ -29,6 +30,15 @@ func _build_vehicle() -> void:
 	body_visual = Node3D.new()
 	body_visual.name = "RallySUVVisual"
 	add_child(body_visual)
+	if ResourceLoader.exists(VEHICLE_MODEL_PATH):
+		var imported_scene := load(VEHICLE_MODEL_PATH) as PackedScene
+		if imported_scene != null:
+			var imported_vehicle := imported_scene.instantiate() as Node3D
+			if imported_vehicle != null:
+				imported_vehicle.name = "ImportedRallySUV"
+				body_visual.add_child(imported_vehicle)
+				_collect_imported_wheels(imported_vehicle)
+				return
 	_box(body_visual, Vector3(0, 1.05, 0), Vector3(2.85, 0.66, 1.48), Color("#c74725"), Vector3.ZERO)
 	_box(body_visual, Vector3(-0.12, 1.63, 0), Vector3(1.48, 0.72, 1.32), Color("#a83220"), Vector3(0, 0, -0.08))
 	_box(body_visual, Vector3(-0.1, 1.67, 0), Vector3(1.2, 0.48, 1.34), Color("#8fc1ce"), Vector3.ZERO)
@@ -67,6 +77,14 @@ func _build_vehicle() -> void:
 			alloy.albedo_color = Color("#bdc5c7")
 			hub.material_override = alloy
 			body_visual.add_child(hub)
+
+func _collect_imported_wheels(root: Node) -> void:
+	for child in root.get_children():
+		if child is Node3D:
+			var node_name := child.name.to_lower()
+			if node_name.contains("wheel") or node_name.contains("tire"):
+				wheels.append(child as MeshInstance3D if child is MeshInstance3D else null)
+			_collect_imported_wheels(child)
 
 func _box(parent: Node3D, pos: Vector3, dimensions: Vector3, tint: Color, tilt: Vector3) -> void:
 	var part := MeshInstance3D.new()
@@ -108,7 +126,8 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	wheel_spin += velocity.x * delta * 2.2
 	for wheel in wheels:
-		wheel.rotation.z = wheel_spin
+		if is_instance_valid(wheel):
+			wheel.rotation.z = wheel_spin
 	if global_position.y < -22.0 or global_position.x < -100.0:
 		crashed = true
 
