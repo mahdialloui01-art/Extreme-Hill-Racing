@@ -22,11 +22,15 @@ var best_distance := 0.0
 var start_x := 12.0
 var fuel := FUEL_MAX
 var coins := 0
+var wallet_coins := 0
+var engine_level := 0
+var upgrade_button: Button
 var stage_finished := false
 var run_ended := false
 var pickups: Array[Area3D] = []
 
 func _ready() -> void:
+	_load_progress()
 	_setup_environment()
 	_build_world()
 	_build_pickups_and_hazards()
@@ -130,6 +134,8 @@ func _on_pickup_body_entered(body: Node3D, pickup: Area3D, kind: String) -> void
 		fuel = minf(FUEL_MAX, fuel + 34.0)
 	else:
 		coins += COIN_REWARD
+	wallet_coins += COIN_REWARD
+	_save_progress()
 	pickup.queue_free()
 	pickups.erase(pickup)
 
@@ -242,6 +248,18 @@ func _build_hud() -> void:
 	restart.tooltip_text = "Restart stage"
 	restart.pressed.connect(_restart)
 	root.add_child(restart)
+	upgrade_button = Button.new()
+	upgrade_button.text = "ENGINE UPGRADE  •  100 COINS"
+	upgrade_button.anchor_left = 1.0
+	upgrade_button.anchor_right = 1.0
+	upgrade_button.offset_left = -300
+	upgrade_button.offset_top = 96
+	upgrade_button.offset_right = -20
+	upgrade_button.offset_bottom = 148
+	upgrade_button.add_theme_font_size_override("font_size", 15)
+	upgrade_button.pressed.connect(_buy_engine_upgrade)
+	root.add_child(upgrade_button)
+	_update_upgrade_button()
 
 func _on_gas_down() -> void:
 	if not run_ended and fuel > 0.0:
@@ -302,11 +320,12 @@ func _process(delta: float) -> void:
 	var distance := maxf(0.0, car.global_position.x - start_x)
 	speed_label.text = "SPEED   %03d km/h" % int(speed)
 	distance_label.text = "DISTANCE   %04d / %04d m" % [int(distance), int(STAGE_LENGTH_M)]
-	coins_label.text = "COINS   %03d" % coins
+	coins_label.text = "COINS   %03d  •  WALLET %d" % [coins, wallet_coins]
 	fuel_label.text = "FUEL   %d%%" % int(fuel)
 	fuel_bar.value = fuel
 	stage_bar.value = distance
 	best_distance = maxf(best_distance, distance)
+	_update_upgrade_button()
 	if not run_ended:
 		status_label.text = "BEST %04d m   •   COLLECT FUEL & COINS" % int(best_distance)
 	if not stage_finished and distance >= STAGE_LENGTH_M:
@@ -315,6 +334,8 @@ func _process(delta: float) -> void:
 		car.set_controls(false, false)
 		status_label.text = "STAGE COMPLETE!   +500 COINS"
 		coins += 500
+	wallet_coins += 500
+	_save_progress()
 	if car.crashed and not run_ended:
 		run_ended = true
 		car.set_controls(false, false)
@@ -324,11 +345,44 @@ func _process(delta: float) -> void:
 		camera.global_position = camera.global_position.lerp(target, minf(1.0, delta * 3.0))
 		camera.look_at(car.global_position + Vector3(2.0, 1.2, 0), Vector3.UP)
 
+func _load_progress() -> void:
+	var config := ConfigFile.new()
+	if config.load("user://extreme_hill_progress.cfg") == OK:
+		wallet_coins = int(config.get_value("career", "coins", 0))
+		engine_level = int(config.get_value("garage", "engine_level", 0))
+		best_distance = float(config.get_value("career", "best_distance", 0.0))
+
+func _save_progress() -> void:
+	var config := ConfigFile.new()
+	config.set_value("career", "coins", wallet_coins)
+	config.set_value("career", "best_distance", best_distance)
+	config.set_value("garage", "engine_level", engine_level)
+	config.save("user://extreme_hill_progress.cfg")
+
+func _buy_engine_upgrade() -> void:
+	if wallet_coins < 100 or engine_level >= 5:
+		return
+	wallet_coins -= 100
+	engine_level += 1
+	car.engine_force = 34.0 + float(engine_level) * 5.0
+	_save_progress()
+	_update_upgrade_button()
+
+func _update_upgrade_button() -> void:
+	if not is_instance_valid(upgrade_button):
+		return
+	if engine_level >= 5:
+		upgrade_button.text = "ENGINE MAX  •  LV 5"
+	else:
+		upgrade_button.text = "ENGINE LV %d  •  UPGRADE 100  •  WALLET %d" % [engine_level, wallet_coins]
+	upgrade_button.disabled = engine_level >= 5 or wallet_coins < 100
+
 func _restart() -> void:
 	car.reset_car(Vector3(start_x, terrain.height_at(start_x) + 1.65, 0))
 	camera.global_position = car.global_position + Vector3(2.0, 9.0, 22.0)
 	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
 	fuel = FUEL_MAX
+	coins = 0
 	car.fuel_empty = false
 	stage_finished = false
 	run_ended = false
