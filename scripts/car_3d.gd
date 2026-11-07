@@ -37,12 +37,7 @@ func _create_dust_effect() -> void:
 	dust_mesh.radius = 0.16
 	dust_mesh.height = 0.32
 	dust_particles.mesh = dust_mesh
-	var particle_material := ParticleProcessMaterial.new()
-	particle_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	particle_material.emission_sphere_radius = 0.35
-	particle_material.damping_min = 1.0
-	particle_material.damping_max = 2.5
-	dust_particles.process_material = particle_material
+	# CPUParticles3D uses its own emission settings; it has no process_material property.
 	add_child(dust_particles)
 
 func _ready() -> void:
