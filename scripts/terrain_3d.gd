@@ -11,13 +11,47 @@ const BOTTOM_Y := -34.0
 const TREE_MODEL_PATH := "res://spruce-tree.glb"
 const ROCK_MODEL_PATH := "res://low-poly-nature-rock-cluster (1).glb"
 
+var stage_index := 0
+var difficulty := 1.0
+var ground_tint := Color("#435b3c")
+var stone_tint := Color("#77766c")
+var tree_tint := Color("#31513d")
 var tree_scene: PackedScene
 var rock_scene: PackedScene
 var rng := RandomNumberGenerator.new()
 
+func configure_stage(index: int) -> void:
+	stage_index = clampi(index, 0, 4)
+	difficulty = 1.0 + float(stage_index) * 0.34
+	match stage_index:
+		0:
+			ground_tint = Color("#435b3c")
+			stone_tint = Color("#77766c")
+			tree_tint = Color("#31513d")
+		1:
+			ground_tint = Color("#66513c")
+			stone_tint = Color("#a18a6a")
+			tree_tint = Color("#5b513b")
+		2:
+			ground_tint = Color("#9a7041")
+			stone_tint = Color("#c39a61")
+			tree_tint = Color("#78613a")
+		3:
+			ground_tint = Color("#9baab0")
+			stone_tint = Color("#d2dce0")
+			tree_tint = Color("#536b72")
+		4:
+			ground_tint = Color("#4b3430")
+			stone_tint = Color("#a65a3c")
+			tree_tint = Color("#493a32")
+
 func height_at(x: float) -> float:
-	# Long readable climbs, rolling bowls and small surface bumps.
-	return 4.0 + sin(x * 0.00145) * 4.8 + sin(x * 0.0031 + 1.1) * 1.7 + sin(x * 0.00042 + 0.5) * 5.8 + maxf(0.0, sin(x * 0.00078 - 0.3)) * 2.5 + sin(x * 0.009) * 0.16
+	# Each unlocked stage increases climb amplitude and short-wave roughness.
+	var long_hills := sin(x * 0.00145) * 4.8 + sin(x * 0.00042 + 0.5) * 5.8
+	var rolling := sin(x * 0.0031 + 1.1) * 1.7
+	var steep_ridges := sin(x * (0.006 + float(stage_index) * 0.0018)) * (0.16 + float(stage_index) * 0.16)
+	var sharp_bumps := sin(x * (0.009 + float(stage_index) * 0.0025)) * (0.16 + float(stage_index) * 0.12)
+	return 4.0 + long_hills * difficulty + rolling * difficulty + maxf(0.0, sin(x * 0.00078 - 0.3)) * 2.5 * difficulty + steep_ridges + sharp_bumps
 
 func _ready() -> void:
 	rng.seed = 732041
@@ -74,8 +108,8 @@ func _build_ground() -> void:
 func _add_ground_triangle(st: SurfaceTool, faces: PackedVector3Array, a: Vector3, b: Vector3, c: Vector3) -> void:
 	var altitude := clampf(((a.y + b.y + c.y) / 3.0 + 2.0) / 20.0, 0.0, 1.0)
 	var x_factor := 0.5 + 0.5 * sin((a.x + b.x + c.x) * 0.0017)
-	var grass := Color("#435b3c").lerp(Color("#78805a"), x_factor * 0.34)
-	var stone := Color("#77766c").lerp(Color("#a49a83"), x_factor * 0.22)
+	var grass := ground_tint.lerp(ground_tint.lightened(0.22), x_factor * 0.34)
+	var stone := stone_tint.lerp(stone_tint.lightened(0.16), x_factor * 0.22)
 	st.set_color(grass.lerp(stone, altitude))
 	st.add_vertex(a)
 	st.add_vertex(c)
@@ -284,7 +318,7 @@ func _add_tree(pos: Vector3, scale_value: float) -> void:
 		crown.mesh = cone
 		crown.position.y = 2.0 + float(j) * 0.78
 		var leaves := StandardMaterial3D.new()
-		leaves.albedo_color = Color("#31513d").lerp(Color("#78834c"), rng.randf() * 0.35)
+		leaves.albedo_color = tree_tint.lerp(tree_tint.lightened(0.24), rng.randf() * 0.35)
 		leaves.roughness = 1.0
 		crown.material_override = leaves
 		tree.add_child(crown)
@@ -302,7 +336,7 @@ func _add_bush(pos: Vector3, scale_value: float) -> void:
 		leaf.mesh = mesh
 		leaf.position = Vector3(rng.randf_range(-0.45, 0.45), rng.randf_range(0.0, 0.45), rng.randf_range(-0.45, 0.45))
 		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color("#405b37").lerp(Color("#78834a"), rng.randf() * 0.5)
+		mat.albedo_color = tree_tint.lerp(tree_tint.lightened(0.3), rng.randf() * 0.5)
 		mat.roughness = 1.0
 		leaf.material_override = mat
 		bush.add_child(leaf)
@@ -325,7 +359,7 @@ func _add_rock(pos: Vector3, size_value: float) -> void:
 	rock.scale = Vector3(rng.randf_range(0.8, 1.5), rng.randf_range(0.55, 1.0), rng.randf_range(0.8, 1.4))
 	rock.rotation = Vector3(rng.randf_range(-0.2, 0.2), rng.randf_range(0.0, TAU), rng.randf_range(-0.2, 0.2))
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color("#62645e").lerp(Color("#928674"), rng.randf() * 0.5)
+	mat.albedo_color = stone_tint.lerp(stone_tint.lightened(0.18), rng.randf() * 0.5)
 	mat.roughness = 1.0
 	rock.material_override = mat
 	add_child(rock)
