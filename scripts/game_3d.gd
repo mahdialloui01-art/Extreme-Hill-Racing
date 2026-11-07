@@ -543,25 +543,41 @@ func _apply_stage_look() -> void:
 	if not is_instance_valid(world_environment) or not is_instance_valid(sun_light):
 		return
 	var env := world_environment.environment
+	var sky_mat := env.sky.sky_material as ProceduralSkyMaterial
 	match current_stage:
 		0:
-			env.background_color = Color("#39739a")
+			sky_mat.sky_top_color = Color("#39739a")
+			sky_mat.sky_horizon_color = Color("#c5d7d0")
+			sky_mat.ground_bottom_color = Color("#283b35")
+			sky_mat.ground_horizon_color = Color("#899b8d")
 			env.ambient_light_color = Color("#b6c8d5")
 			sun_light.light_color = Color("#fff0d7")
 		1:
-			env.background_color = Color("#9b7755")
+			sky_mat.sky_top_color = Color("#75553f")
+			sky_mat.sky_horizon_color = Color("#d6b58d")
+			sky_mat.ground_bottom_color = Color("#46372e")
+			sky_mat.ground_horizon_color = Color("#a17a58")
 			env.ambient_light_color = Color("#d5b998")
 			sun_light.light_color = Color("#ffe0b0")
 		2:
-			env.background_color = Color("#d19a55")
+			sky_mat.sky_top_color = Color("#d19a55")
+			sky_mat.sky_horizon_color = Color("#f0d0a0")
+			sky_mat.ground_bottom_color = Color("#8c653b")
+			sky_mat.ground_horizon_color = Color("#c79a62")
 			env.ambient_light_color = Color("#f0c98e")
 			sun_light.light_color = Color("#fff0c5")
 		3:
-			env.background_color = Color("#7895ad")
+			sky_mat.sky_top_color = Color("#7895ad")
+			sky_mat.sky_horizon_color = Color("#d1e2ed")
+			sky_mat.ground_bottom_color = Color("#667985")
+			sky_mat.ground_horizon_color = Color("#b7cbd6")
 			env.ambient_light_color = Color("#d1e2ed")
 			sun_light.light_color = Color("#e6f4ff")
 		4:
-			env.background_color = Color("#4d3535")
+			sky_mat.sky_top_color = Color("#4d3535")
+			sky_mat.sky_horizon_color = Color("#c58b70")
+			sky_mat.ground_bottom_color = Color("#342524")
+			sky_mat.ground_horizon_color = Color("#814b3c")
 			env.ambient_light_color = Color("#c58b70")
 			sun_light.light_color = Color("#ff9a62")
 
