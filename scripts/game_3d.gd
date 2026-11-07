@@ -495,6 +495,7 @@ func _buy_engine_upgrade() -> void:
 	car.engine_force = 34.0 + float(engine_level) * 5.0
 	_save_progress()
 	_update_upgrade_button()
+	_update_menu_upgrade_button()
 
 func _update_upgrade_button() -> void:
 	if not is_instance_valid(upgrade_button):
