@@ -379,12 +379,17 @@ func _add_rock(pos: Vector3, size_value: float) -> void:
 
 func _build_stage_markers() -> void:
 	# Zone title boards make the four-part route feel like one authored stage.
-	var zone_titles := [
-		{"x": 90.0, "title": "PINE FOOTHILLS"},
-		{"x": 1120.0, "title": "THE ROCK PASS"},
-		{"x": 2180.0, "title": "HIGH COUNTRY"},
-		{"x": 3260.0, "title": "SUMMIT RIDGE"}
+	var region_names := [
+		["PINE FOOTHILLS", "THE ROCK PASS", "HIGH COUNTRY", "SUMMIT RIDGE"],
+		["CANYON GATE", "REDSTONE WALLS", "BROKEN PLATEAU", "EAGLE CLIFFS"],
+		["DUNE ENTRY", "SANDSTONE BOWL", "DRY RIVERBED", "SUNSCORCHED MESA"],
+		["FROSTLINE", "GLACIER PASS", "WHITEOUT RIDGE", "ICE CROWN"],
+		["ASHEN GATE", "LAVA FIELDS", "OBSIDIAN WALL", "VOLCANO CRATER"]
 	]
+	var zone_x_positions := [90.0, 1120.0, 2180.0, 3260.0]
+	var zone_titles: Array[Dictionary] = []
+	for i in range(4):
+		zone_titles.append({"x": zone_x_positions[i], "title": region_names[stage_index][i]})
 	for zone in zone_titles:
 		var zone_x: float = zone["x"]
 		var zone_y := height_at(zone_x)
