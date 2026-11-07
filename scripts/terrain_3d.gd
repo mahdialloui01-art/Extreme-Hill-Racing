@@ -158,6 +158,7 @@ func _add_road_shoulders() -> void:
 	var shoulder_mat := StandardMaterial3D.new()
 	shoulder_mat.albedo_color = Color("#65513e")
 	shoulder_mat.roughness = 1.0
+	shoulder_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	shoulder.material_override = shoulder_mat
 	add_child(shoulder)
 
