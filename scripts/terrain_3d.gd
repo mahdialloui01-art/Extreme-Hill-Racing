@@ -331,6 +331,26 @@ func _add_rock(pos: Vector3, size_value: float) -> void:
 	add_child(rock)
 
 func _build_stage_markers() -> void:
+	# Zone title boards make the four-part route feel like one authored stage.
+	var zone_titles := [
+		{"x": 90.0, "title": "PINE FOOTHILLS"},
+		{"x": 1120.0, "title": "THE ROCK PASS"},
+		{"x": 2180.0, "title": "HIGH COUNTRY"},
+		{"x": 3260.0, "title": "SUMMIT RIDGE"}
+	]
+	for zone in zone_titles:
+		var zone_x: float = zone["x"]
+		var zone_y := height_at(zone_x)
+		var title_label := Label3D.new()
+		title_label.text = zone["title"]
+		title_label.position = Vector3(zone_x, zone_y + 4.0, 6.8)
+		title_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		title_label.font_size = 76
+		title_label.pixel_size = 0.014
+		title_label.outline_size = 12
+		title_label.modulate = Color("#fff0c9")
+		add_child(title_label)
+
 	# Visible wooden distance signs every 500 metres make this a legible stage.
 	for distance in range(500, int(WORLD_END), 500):
 		var x := float(distance) * 10.0 / 10.0
