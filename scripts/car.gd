@@ -10,7 +10,6 @@ const AIR_ROTATION_SPEED := 2.7
 
 var touch_accelerate := false
 var touch_brake := false
-var distance_origin := 0.0
 var wheel_spin := 0.0
 var crashed := false
 
@@ -21,11 +20,10 @@ func _ready() -> void:
 	floor_max_angle = deg_to_rad(65.0)
 	var hitbox := CollisionShape2D.new()
 	var rectangle := RectangleShape2D.new()
-	rectangle.size = Vector2(112.0, 38.0)
+	rectangle.size = Vector2(112.0, 45.0)
 	hitbox.shape = rectangle
-	hitbox.position = Vector2(0.0, -18.0)
+	hitbox.position = Vector2(0.0, 5.0)
 	add_child(hitbox)
-	distance_origin = global_position.x
 
 func set_controls(accelerate: bool, brake: bool) -> void:
 	touch_accelerate = accelerate
@@ -64,6 +62,7 @@ func _physics_process(delta: float) -> void:
 
 	wheel_spin += velocity.x * delta / 22.0
 	move_and_slide()
+	queue_redraw()
 
 	if global_position.y > 1800.0:
 		crashed = true
@@ -75,11 +74,15 @@ func reset_car(spawn_position: Vector2) -> void:
 	crashed = false
 	touch_accelerate = false
 	touch_brake = false
+	queue_redraw()
 
 func _draw() -> void:
-	# Shadow
-	draw_ellipse(Vector2(0.0, 14.0), Vector2(65.0, 10.0), Color(0.05, 0.12, 0.10, 0.22))
-	# Wheels
+	var shadow_points := PackedVector2Array()
+	for i in range(20):
+		var angle := TAU * float(i) / 20.0
+		shadow_points.append(Vector2(cos(angle) * 65.0, sin(angle) * 10.0 + 14.0))
+	draw_colored_polygon(shadow_points, Color(0.05, 0.12, 0.10, 0.22))
+
 	for wheel_x in [-39.0, 39.0]:
 		draw_circle(Vector2(wheel_x, 5.0), 22.0, Color(0.075, 0.085, 0.10, 1.0))
 		draw_circle(Vector2(wheel_x, 5.0), 12.0, Color(0.62, 0.68, 0.70, 1.0))
@@ -88,7 +91,7 @@ func _draw() -> void:
 			var start := Vector2(wheel_x, 5.0) + Vector2(cos(angle), sin(angle)) * 4.0
 			var finish := Vector2(wheel_x, 5.0) + Vector2(cos(angle), sin(angle)) * 10.0
 			draw_line(start, finish, Color(0.18, 0.22, 0.24, 1.0), 2.5)
-	# Chassis and cabin
+
 	var body_points := PackedVector2Array([
 		Vector2(-61, -28), Vector2(-47, -48), Vector2(25, -48),
 		Vector2(54, -27), Vector2(62, -7), Vector2(-58, -7)
