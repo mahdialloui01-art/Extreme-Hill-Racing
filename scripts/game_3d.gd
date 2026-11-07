@@ -2,8 +2,16 @@ extends Node3D
 
 const TerrainScript = preload("res://scripts/terrain_3d.gd")
 const CarScript = preload("res://scripts/car_3d.gd")
+const AudioScript = preload("res://scripts/audio_manager.gd")
+const STAGE_NAMES := ["PINE FOOTHILLS", "ROCK PASS", "DESERT DUNES", "FROZEN RIDGE", "VOLCANO RUN"]
+const STAGE_LENGTHS := [2400.0, 2800.0, 3200.0, 3700.0, 4200.0]
+const STAGE_DIFFICULTIES := ["ROOKIE", "EASY", "MEDIUM", "HARD", "EXTREME"]
 
-const STAGE_LENGTH_M := 4200.0
+var stage_length_m := 2400.0
+var current_stage := 0
+var selected_stage := 0
+var unlocked_stage := 0
+var fuel_drain_per_second := 1.45
 const FUEL_MAX := 100.0
 const FUEL_DRAIN_PER_SECOND := 1.45
 const COIN_REWARD := 10
@@ -34,10 +42,17 @@ var menu_subtitle: Label
 var menu_start_button: Button
 var menu_upgrade_button: Button
 var menu_restart_button: Button
+var stage_select: OptionButton
+var audio_manager: Node
+var world_environment: WorldEnvironment
+var sun_light: DirectionalLight3D
 var game_started := false
 
 func _ready() -> void:
 	_load_progress()
+	audio_manager = AudioScript.new()
+	audio_manager.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(audio_manager)
 	_setup_environment()
 	_build_world()
 	_build_pickups_and_hazards()
@@ -60,16 +75,20 @@ func _setup_environment() -> void:
 	env.ambient_light_energy = 0.72
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	world.environment = env
+	world_environment = world
 	add_child(world)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-42, -28, 0)
 	sun.light_color = Color("#fff0d7")
 	sun.light_energy = 1.25
 	sun.shadow_enabled = true
+	sun_light = sun
 	add_child(sun)
+	_apply_stage_look()
 
 func _build_world() -> void:
 	terrain = TerrainScript.new()
+	terrain.configure_stage(current_stage)
 	terrain.name = "3D_Mountain_Track"
 	add_child(terrain)
 	car = CarScript.new()
@@ -87,14 +106,16 @@ func _build_world() -> void:
 	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
 
 func _build_pickups_and_hazards() -> void:
-	# Fuel cans and coin lines are deliberately placed on the drivable surface.
-	for x in [310.0, 720.0, 1160.0, 1580.0, 2020.0, 2460.0, 2910.0, 3360.0, 3790.0]:
-		_spawn_pickup(Vector3(x, terrain.height_at(x) + 1.45, 0.0), "fuel")
-	for x in [150.0, 175.0, 200.0, 485.0, 510.0, 535.0, 890.0, 915.0, 940.0, 1320.0, 1345.0, 1370.0, 1760.0, 1785.0, 1810.0, 2240.0, 2265.0, 2290.0, 2680.0, 2705.0, 2730.0, 3140.0, 3165.0, 3190.0, 3560.0, 3585.0, 3610.0, 3950.0, 3975.0, 4000.0]:
-		_spawn_pickup(Vector3(x, terrain.height_at(x) + 1.9, 0.0), "coin")
-	# Heavy timber obstacles create short jumps and require throttle control.
-	for x in [610.0, 1490.0, 2380.0, 3470.0]:
-		_spawn_log_obstacle(x)
+	var fuel_interval := 760 - current_stage * 62
+	for x in range(300, int(stage_length_m) - 120, fuel_interval):
+		_spawn_pickup(Vector3(float(x), terrain.height_at(float(x)) + 1.45, 0.0), "fuel")
+	for x in range(150, int(stage_length_m) - 100, 310):
+		for offset in [0, 24, 48]:
+			var coin_x := float(x + offset)
+			_spawn_pickup(Vector3(coin_x, terrain.height_at(coin_x) + 1.9, 0.0), "coin")
+	var hazard_interval := 650 - current_stage * 82
+	for x in range(610, int(stage_length_m) - 100, hazard_interval):
+		_spawn_log_obstacle(float(x))
 
 func _spawn_pickup(pos: Vector3, kind: String) -> void:
 	var area := Area3D.new()
@@ -140,8 +161,10 @@ func _on_pickup_body_entered(body: Node3D, pickup: Area3D, kind: String) -> void
 		return
 	if kind == "fuel":
 		fuel = minf(FUEL_MAX, fuel + 34.0)
+		audio_manager.play_sfx("fuel")
 	else:
 		coins += COIN_REWARD
+		audio_manager.play_sfx("coin")
 		wallet_coins += COIN_REWARD
 		_save_progress()
 	pickup.queue_free()
@@ -169,7 +192,7 @@ func _spawn_log_obstacle(x: float) -> void:
 	shape.size = Vector3(2.5, 0.72, 0.85)
 	collision.shape = shape
 	obstacle.add_child(collision)
-	add_child(obstacle)
+	terrain.add_child(obstacle)
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
@@ -222,7 +245,7 @@ func _build_hud() -> void:
 	stage_bar.offset_right = 190
 	stage_bar.offset_top = 20
 	stage_bar.offset_bottom = 34
-	stage_bar.max_value = STAGE_LENGTH_M
+	stage_bar.max_value = stage_length_m
 	stage_bar.value = 0
 	stage_bar.show_percentage = false
 	root.add_child(stage_bar)
