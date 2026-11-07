@@ -791,7 +791,7 @@ func _update_upgrade_button() -> void:
 
 func _restart() -> void:
 	_save_progress()
-	car.reset_car(Vector3(start_x, terrain.height_at(start_x) + 1.65, 0))
+	car.reset_car(Vector3(start_x, terrain.height_at(start_x) + 0.12, 0))
 	camera.global_position = car.global_position + Vector3(2.0, 9.0, 22.0)
 	camera.look_at(car.global_position + Vector3(2.0, 1.0, 0), Vector3.UP)
 	fuel = FUEL_MAX
